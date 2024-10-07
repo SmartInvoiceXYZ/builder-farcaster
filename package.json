@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "clean": "rm -rf dist && echo 'Done.'",
+    "lint": "eslint",
     "prepare": "husky",
     "start": "bun run src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
