@@ -5,5 +5,8 @@
   "main": "arc/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@types/bun": "^1.1.10"
   }
 }
