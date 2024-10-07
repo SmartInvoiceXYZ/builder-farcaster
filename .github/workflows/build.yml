@@ -35,42 +35,27 @@ jobs:
       - name: Checking out repository code
         uses: actions/checkout@v4.2.0 # Action for checking out a repo.
 
-      - name: Setup Node.js Environment
-        uses: actions/setup-node@v4.0.4 # Action for setting up Node environment.
-        with:
-          node-version: latest
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2.0.1
 
-      - name: Install PNPM package manager
-        uses: pnpm/action-setup@v4.0.0 # Action for setting up pnpm.
-        id: pnpm-install
+      - name: Use cached node_modules
+        uses: actions/cache@v4.1.0
         with:
-          version: ^9
-          run_install: false
-
-      - name: Capture pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Cache pnpm Store
-        uses: actions/cache@v4.1.0 # Action provides caching dependencies and build outputs to improve workflow execution time.
-        with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }} # The path of the directory to cache.
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }} # An explicit key for restoring and saving the cache.
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lockb') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            node-modules-
 
-      # Installs all dependencies specified in the project's package.json file.
-      - name: Install dependencies using pnpm
-        run: pnpm install
+      - name: Install Dependencies
+        run: bun install
 
       # This compiles the application in optimized production mode and output it to the build folder.
       - name: Build the application and export it
-        run: pnpm run build
+        run: bun run build
 
       # Runs unit tests for the application using Jest.
       - name: Execute tests using Vitest
-        run: pnpm run test
+        run: bun run test
 
   release:
     name: Create Release
