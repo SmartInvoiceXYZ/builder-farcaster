@@ -2,7 +2,7 @@
   "name": "builder-farcaster",
   "version": "1.0.0-alpha.0",
   "description": "",
-  "main": "arc/index.ts",
+  "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
