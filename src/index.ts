@@ -1,8 +1,9 @@
-import dotenv from 'dotenv'
 import pino, { Logger } from 'pino'
-
-dotenv.config()
+import { env } from './config'
 
 const logger: Logger = pino()
 
-logger.info('Hello World')
+// Use the validated environment variables
+logger.info(`Warpcast Base URL: ${env.WARPCAST_BASE_URL}`)
+logger.info(`Using Access Token: ${env.WARPCAST_ACCESS_TOKEN}`)
+logger.info(`Running in ${env.NODE_ENV} mode`)
