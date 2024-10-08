@@ -16,7 +16,7 @@ export default defineConfig({
     },
     rollupOptions: {
       // Prevent bundling dependencies
-      external: ['dotenv', 'pino'],
+      external: ['dotenv', 'pino', '@prisma/client'],
     },
     outDir: 'dist', // Output directory
   },
