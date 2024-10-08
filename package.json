@@ -4,6 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "prebuild": "prisma generate",
     "build": "vite build",
     "dev": "vite",
     "lint": "eslint",
