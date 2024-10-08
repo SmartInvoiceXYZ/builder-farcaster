@@ -8,10 +8,11 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   build: {
+    target: 'node22',
     lib: {
       entry: './src/index.ts',
       formats: ['es'], // Output as ES module for consistency
-      fileName: `index.mjs`,
+      fileName: `index`,
     },
     rollupOptions: {
       // Prevent bundling dependencies
