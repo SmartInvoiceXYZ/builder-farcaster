@@ -1,23 +1,66 @@
-import { getFollowers } from '@/services/warpcast/get-followers'
-import { env } from './config'
-import { logger } from './logger'
-import { getMe } from './services/warpcast/get-me'
+import { getFollowers } from '@/services/warpcast/get-followers';
+import { User } from '@/services/warpcast/types';
+import { getCache, setCache } from './cache';
+import { env } from './config';
+import { logger } from './logger';
+import { getMe } from './services/warpcast/get-me';
+
+// Constants
+const CACHE_MAX_AGE_MS = 86400 * 1000; // 1 day in milliseconds
 
 // Log environment information using structured logging
-logger.info({ baseUrl: env.WARPCAST_BASE_URL }, 'Warpcast Base URL')
-logger.info({ accessToken: env.WARPCAST_ACCESS_TOKEN }, 'Using Access Token')
-logger.info({ mode: env.NODE_ENV }, 'Application running mode')
+logger.info({ baseUrl: env.WARPCAST_BASE_URL }, 'Warpcast Base URL');
+if (env.NODE_ENV !== 'production') {
+  logger.info({ accessToken: env.WARPCAST_ACCESS_TOKEN }, 'Using Access Token');
+} else {
+  logger.info('Access token is set');
+}
+logger.info({ mode: env.NODE_ENV }, 'Application running mode');
 
-// Example of handling some application logic
+// Example of handling some application logic with caching
 void (async () => {
   try {
-    // Suppose this is where you would make some async call
-    const { user } = await getMe(env)
-    logger.info({ user }, 'getMe function executed successfully')
+    // Attempt to get cached user data
+    let user = await getCache<User>('me', CACHE_MAX_AGE_MS);
 
-    const { users } = await getFollowers(env, user.fid)
-    logger.info({ users }, 'getFollowers function executed successfully')
+    if (user) {
+      logger.info('User fetched from cache');
+    } else {
+      // Fetch the user if not in cache
+      const response = await getMe(env);
+      user = response.user;
+      // Cache the result
+      await setCache('me', user);
+      logger.info({ user }, 'getMe function executed and cached successfully');
+    }
+
+    // Assuming that user will not be null at this point.
+    // Fetch followers and use caching as well
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    let users = await getCache<User[]>(`followers_${user.fid}`, CACHE_MAX_AGE_MS);
+
+    if (users) {
+      logger.info('Followers fetched from cache');
+    } else {
+      // Fetch the followers if not in cache
+      const response = await getFollowers(env, user.fid);
+      users = response.users;
+      // Cache the result
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      await setCache(`followers_${user.fid}`, users);
+      logger.info(
+        { users },
+        'getFollowers function executed and cached successfully'
+      );
+    }
   } catch (error) {
-    logger.error({ error }, 'Error executing async function')
+    if (error instanceof Error) {
+      logger.error(
+        { message: error.message, stack: error.stack },
+        'Error executing async function'
+      );
+    } else {
+      logger.error({ error }, 'Unknown error occurred');
+    }
   }
-})()
+})();
