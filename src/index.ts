@@ -1,9 +1,10 @@
 import { getFollowers } from '@/services/warpcast/get-followers'
-import { User } from '@/services/warpcast/types'
+import { User, Verification } from '@/services/warpcast/types'
 import { getCache, setCache } from './cache'
 import { env } from './config'
 import { logger } from './logger'
 import { getMe } from './services/warpcast/get-me'
+import { getVerifications } from './services/warpcast/get-verifications'
 
 // Constants
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
@@ -60,8 +61,36 @@ void (async () => {
       )
     }
 
-    // Example usage of the follower fids
-    logger.info({ followerFids }, 'Follower fids processed successfully')
+    // Fetch verifications for each follower fid and cache them
+    for (const followerFid of followerFids) {
+      let verificationAddresses = await getCache<string[]>(
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `verifications_${followerFid}`,
+        CACHE_MAX_AGE_MS,
+      )
+
+      if (verificationAddresses) {
+        logger.info(
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          `Verification addresses for fid ${followerFid} fetched from cache`,
+        )
+      } else {
+        // Fetch the verifications if not in cache
+        const verificationResponse = await getVerifications(env, followerFid)
+        verificationAddresses = verificationResponse.verifications.map(
+          (verification: Verification) => verification.address,
+        )
+
+        // Cache the verification addresses
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        await setCache(`verifications_${followerFid}`, verificationAddresses)
+        logger.info(
+          { verificationAddresses },
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          `getVerifications function executed and verification addresses cached successfully for fid ${followerFid}`,
+        )
+      }
+    }
   } catch (error) {
     if (error instanceof Error) {
       logger.error(
