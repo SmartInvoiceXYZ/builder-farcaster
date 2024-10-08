@@ -1,17 +1,22 @@
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
+// Export Vite configuration
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  plugins: [
+    // Support for TypeScript path aliases
+    tsconfigPaths(),
+  ],
   build: {
     lib: {
       entry: './src/index.ts',
-      formats: ['cjs'],
-      fileName: () => 'index.js',
+      formats: ['es'], // Output as ES module for consistency
+      fileName: `index.mjs`,
     },
     rollupOptions: {
-      external: [],
+      // Prevent bundling dependencies
+      external: ['dotenv', 'pino'],
     },
-    outDir: 'dist',
+    outDir: 'dist', // Output directory
   },
 })
