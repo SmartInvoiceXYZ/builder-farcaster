@@ -1,3 +1,4 @@
+import { getFollowers } from '@/services/warpcast/get-followers'
 import { env } from './config'
 import { logger } from './logger'
 import { getMe } from './services/warpcast/get-me'
@@ -11,8 +12,11 @@ logger.info({ mode: env.NODE_ENV }, 'Application running mode')
 void (async () => {
   try {
     // Suppose this is where you would make some async call
-    const result = await getMe(env)
-    logger.info({ result }, 'getMe function executed successfully')
+    const { user } = await getMe(env)
+    logger.info({ user }, 'getMe function executed successfully')
+
+    const { users } = await getFollowers(env, user.fid)
+    logger.info({ users }, 'getFollowers function executed successfully')
   } catch (error) {
     logger.error({ error }, 'Error executing async function')
   }
