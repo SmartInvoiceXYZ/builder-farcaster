@@ -62,7 +62,6 @@ async function getFollowerAddresses(followerFid: number) {
 
   if (verificationAddresses) {
     logger.info(
-      { verificationAddresses },
       `Verification addresses for fid ${followerFid.toString()} fetched from cache`,
     )
   } else {
@@ -104,10 +103,7 @@ async function getFollowerDAOs(
   )
 
   if (daoIds) {
-    logger.info(
-      { daoIds },
-      `DAO ids for fid ${followerFid.toString()} fetched from cache`,
-    )
+    logger.info(`DAO ids for fid ${followerFid.toString()} fetched from cache`)
   } else {
     // Fetch DAOs if not in cache
     if (verificationAddresses.length > 0) {
@@ -154,15 +150,15 @@ void (async () => {
   try {
     const fid = await getUserFid()
 
-    const followerFids = await getFollowerFids(fid)
+    const followers = await getFollowerFids(fid)
 
-    for (const followerFid of followerFids) {
-      const addresses = await getFollowerAddresses(followerFid)
-      const daos = await getFollowerDAOs(followerFid, addresses)
+    for (const follower of followers) {
+      const addresses = await getFollowerAddresses(follower)
+      const daos = await getFollowerDAOs(follower, addresses)
 
       logger.info(
         { daos },
-        `DAO ids for follower fid ${followerFid.toString()} fetched and processed`,
+        `DAO ids for follower fid ${follower.toString()} fetched and processed`,
       )
     }
   } catch (error) {
