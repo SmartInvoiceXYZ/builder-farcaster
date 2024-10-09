@@ -18,5 +18,6 @@ model Queue {
   data        String
   timestamp   DateTime
   status      String
+  retries     Int       @default(0)
   completedAt DateTime?
 }

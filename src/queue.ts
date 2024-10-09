@@ -58,3 +58,28 @@ export async function completeTask(taskId: string): Promise<void> {
     data: { status: 'completed', completedAt: new Date() },
   })
 }
+
+/**
+ * Retries a task if it failed.
+ * @param taskId - The unique identifier for the task to retry.
+ * @returns Resolves when the task has been successfully updated for retry.
+ */
+export async function retryTask(taskId: string): Promise<void> {
+  const MAX_RETRIES = 3
+
+  const task = await prisma.queue.findUnique({
+    where: { taskId },
+  })
+
+  if (task && task.retries < MAX_RETRIES) {
+    await prisma.queue.update({
+      where: { taskId },
+      data: { retries: task.retries + 1, status: 'pending' },
+    })
+  } else {
+    await prisma.queue.update({
+      where: { taskId },
+      data: { status: 'failed' },
+    })
+  }
+}
