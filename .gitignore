@@ -172,3 +172,4 @@ dist
 .wrangler/
 /bun.lockb
 /prisma/dev.db
+/prisma/dev.db-journal
