@@ -85,6 +85,47 @@ async function getFollowerAddresses(followerFid: number) {
   return verificationAddresses
 }
 
+/**
+ * Fetches the DAO (Decentralized Autonomous Organization) identifiers associated with a given follower ID.
+ * The method first attempts to retrieve these identifiers from cache; if not present, it fetches them
+ * using the provided verification addresses, caches the result, and then returns the identifiers.
+ * @param followerFid - The unique identifier of the follower.
+ * @param verificationAddresses - An array of addresses used to verify ownership.
+ * @returns A promise that resolves to an array of DAO identifiers, or null if none are found.
+ */
+async function getFollowerDAOs(
+  followerFid: number,
+  verificationAddresses: string[],
+) {
+  // Fetch DAOs for each follower fid using verification addresses and cache DAO ids only
+  let daoIds = await getCache<string[] | null>(
+    `dao_ids_${followerFid.toString()}`,
+    CACHE_MAX_AGE_MS,
+  )
+
+  if (daoIds) {
+    logger.info(
+      { daoIds },
+      `DAO ids for fid ${followerFid.toString()} fetched from cache`,
+    )
+  } else {
+    // Fetch DAOs if not in cache
+    if (verificationAddresses.length > 0) {
+      const daoResponse = await getDAOsForOwners(env, verificationAddresses)
+      daoIds = daoResponse.daos.map((dao) => dao.id) // Extract DAO ids only
+
+      // Cache the DAO ids
+      await setCache(`dao_ids_${followerFid.toString()}`, daoIds)
+      logger.info(
+        { daoIds },
+        `getDAOsForOwners function executed and DAO ids cached successfully for fid ${followerFid.toString()}`,
+      )
+    }
+  }
+
+  return daoIds
+}
+
 // Example of handling some application logic with caching
 void (async () => {
   try {
@@ -109,33 +150,13 @@ void (async () => {
 
     // Fetch verifications for each follower fid and cache them
     for (const followerFid of followerFids) {
-      const verificationAddresses = await getFollowerAddresses(followerFid)
+      const addresses = await getFollowerAddresses(followerFid)
+      const daos = await getFollowerDAOs(followerFid, addresses)
 
-      // Fetch DAOs for each follower fid using verification addresses and cache DAO ids only
-      let daoIds = await getCache<string[] | null>(
-        `dao_ids_${followerFid.toString()}`,
-        CACHE_MAX_AGE_MS,
+      logger.info(
+        { daos },
+        `DAO ids for follower fid ${followerFid.toString()} fetched and processed`,
       )
-
-      if (daoIds) {
-        logger.info(
-          { daoIds },
-          `DAO ids for fid ${followerFid.toString()} fetched from cache`,
-        )
-      } else {
-        // Fetch DAOs if not in cache
-        if (verificationAddresses.length > 0) {
-          const daoResponse = await getDAOsForOwners(env, verificationAddresses)
-          daoIds = daoResponse.daos.map((dao) => dao.id) // Extract DAO ids only
-
-          // Cache the DAO ids
-          await setCache(`dao_ids_${followerFid.toString()}`, daoIds)
-          logger.info(
-            { daoIds },
-            `getDAOsForOwners function executed and DAO ids cached successfully for fid ${followerFid.toString()}`,
-          )
-        }
-      }
     }
   } catch (error) {
     if (error instanceof Error) {
