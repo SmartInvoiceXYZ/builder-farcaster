@@ -12,3 +12,11 @@ model Cache {
   value     String
   timestamp DateTime
 }
+
+model Queue {
+  taskId      String    @id
+  data        String
+  timestamp   DateTime
+  status      String
+  completedAt DateTime?
+}
