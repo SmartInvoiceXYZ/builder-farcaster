@@ -158,20 +158,37 @@ async function handleActiveProposals() {
 
     const followers = await getFollowerFids(await getUserFid())
     for (const follower of followers) {
+      // Retrieve the addresses associated with the current follower
       const addresses = await getFollowerAddresses(follower)
+
+      // If no addresses are found, skip to the next follower
       if (addresses.length === 0) {
         continue
       }
 
+      // Retrieve the DAOs associated with the current follower and their addresses
       const daos = await getFollowerDAOs(follower, addresses)
+
+      // If no DAOs are found, skip to the next follower
       if (!daos || daos.length <= 0) {
         continue
       }
 
+      // Loop through each proposal in the proposals array
       for (const proposal of proposals) {
+        // If the proposal's DAO ID is not in the list of DAOs for the current follower, skip to the next proposal
         if (!daos.includes(proposal.dao.id)) {
           continue
         }
+
+        logger.info(
+          {
+            proposalNumber: proposal.proposalNumber,
+            title: proposal.title,
+            daoName: proposal.dao.name,
+          },
+          `Proposal ${proposal.proposalNumber.toString()} - ${proposal.title} for ${proposal.dao.name}`,
+        )
       }
     }
 
