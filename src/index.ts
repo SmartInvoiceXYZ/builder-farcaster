@@ -154,12 +154,14 @@ void (async () => {
       const addresses = await getFollowerAddresses(follower)
       const daos = await getFollowerDAOs(follower, addresses)
 
-      if (addresses.length > 0 && daos && daos.length > 0) {
-        logger.debug(
-          { follower, addresses, daos },
-          'Follower with address and DAOs processed',
-        )
+      if (!(addresses.length > 0 && daos && daos.length > 0)) {
+        continue
       }
+
+      logger.debug(
+        { follower, addresses, daos },
+        'Follower with address and DAOs processed',
+      )
     }
 
     proposalsTime = nowDateTime.toUnixInteger()
