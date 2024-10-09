@@ -12,13 +12,14 @@ import { DateTime } from 'luxon'
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
 
 // Log environment information using structured logging
-logger.info({ baseUrl: env.WARPCAST_BASE_URL }, 'Warpcast Base URL')
-if (env.NODE_ENV !== 'production') {
-  logger.info({ accessToken: env.WARPCAST_ACCESS_TOKEN }, 'Using Access Token')
-} else {
-  logger.info('Access token is set')
-}
-logger.info({ mode: env.NODE_ENV }, 'Application running mode')
+logger.info('Environment information', {
+  baseUrl: env.WARPCAST_BASE_URL,
+  accessToken:
+    env.NODE_ENV !== 'production'
+      ? env.WARPCAST_ACCESS_TOKEN
+      : 'Access token is set',
+  mode: env.NODE_ENV,
+})
 
 /**
  * Retrieves the follower FIDs (unique follower IDs) for a given FID (unique ID).
@@ -28,25 +29,21 @@ logger.info({ mode: env.NODE_ENV }, 'Application running mode')
  * @returns - A promise that resolves to an array of follower FIDs.
  */
 async function getFollowerFids(fid: number) {
-  // Assuming that fid will not be null or undefined at this point
-  // Fetch followers and use caching as well
   let followerFids = await getCache<number[] | null>(
     `followers_fids_${fid.toString()}`,
     CACHE_MAX_AGE_MS,
   )
 
   if (followerFids) {
-    logger.info('Follower fids fetched from cache')
+    logger.debug('Follower FIDs fetched from cache', { fid, followerFids })
   } else {
-    // Fetch the followers if not in cache
     const response = await getFollowers(env, fid)
-    followerFids = response.users.map((user) => user.fid) // Extract fids only
-    // Cache the result
+    followerFids = response.users.map((user) => user.fid) // Extract FIDs only
     await setCache(`followers_fids_${fid.toString()}`, followerFids)
-    logger.info(
-      { followerFids },
-      'getFollowers function executed and follower fids cached successfully',
-    )
+    logger.info('Follower FIDs fetched and cached successfully', {
+      fid,
+      followerFids,
+    })
   }
   return followerFids
 }
@@ -63,25 +60,23 @@ async function getFollowerAddresses(followerFid: number) {
   )
 
   if (verificationAddresses) {
-    logger.info(
-      `Verification addresses for fid ${followerFid.toString()} fetched from cache`,
-    )
+    logger.debug('Verification addresses fetched from cache', {
+      followerFid,
+      verificationAddresses,
+    })
   } else {
-    // Fetch the verifications if not in cache
     const verificationResponse = await getVerifications(env, followerFid)
     verificationAddresses = verificationResponse.verifications.map(
       (verification) => verification.address,
     )
-
-    // Cache the verification addresses
     await setCache(
       `verifications_${followerFid.toString()}`,
       verificationAddresses,
     )
-    logger.info(
-      { verificationAddresses },
-      `getVerifications function executed and verification addresses cached successfully for fid ${followerFid.toString()}`,
-    )
+    logger.info('Verification addresses fetched and cached successfully', {
+      followerFid,
+      verificationAddresses,
+    })
   }
   return verificationAddresses
 }
@@ -98,26 +93,22 @@ async function getFollowerDAOs(
   followerFid: number,
   verificationAddresses: string[],
 ) {
-  // Fetch DAOs for each follower fid using verification addresses and cache DAO ids only
   let daoIds = await getCache<string[] | null>(
     `dao_ids_${followerFid.toString()}`,
     CACHE_MAX_AGE_MS,
   )
 
   if (daoIds) {
-    logger.info(`DAO ids for fid ${followerFid.toString()} fetched from cache`)
+    logger.debug('DAO IDs fetched from cache', { followerFid, daoIds })
   } else {
-    // Fetch DAOs if not in cache
     if (verificationAddresses.length > 0) {
       const daoResponse = await getDAOsForOwners(env, verificationAddresses)
-      daoIds = daoResponse.daos.map((dao) => dao.id) // Extract DAO ids only
-
-      // Cache the DAO ids
+      daoIds = daoResponse.daos.map((dao) => dao.id) // Extract DAO IDs only
       await setCache(`dao_ids_${followerFid.toString()}`, daoIds)
-      logger.info(
-        { daoIds },
-        `getDAOsForOwners function executed and DAO ids cached successfully for fid ${followerFid.toString()}`,
-      )
+      logger.info('DAO IDs fetched and cached successfully', {
+        followerFid,
+        daoIds,
+      })
     }
   }
 
@@ -131,18 +122,15 @@ async function getFollowerDAOs(
  * @returns A promise that resolves to the user's FID.
  */
 async function getUserFid() {
-  // Attempt to get cached user fid
   let fid = await getCache<number | null>('user_fid', CACHE_MAX_AGE_MS)
 
   if (fid) {
-    logger.info('User fid fetched from cache')
+    logger.debug('User FID fetched from cache', { fid })
   } else {
-    // Fetch the user if fid is not in cache
     const response = await getMe(env)
     fid = response.user.fid
-    // Cache only the fid of the user
     await setCache('user_fid', fid)
-    logger.info({ fid }, 'getMe function executed and fid cached successfully')
+    logger.info('User FID fetched and cached successfully', { fid })
   }
   return fid
 }
@@ -156,10 +144,10 @@ void (async () => {
       nowDateTime.minus({ week: 1 }).toUnixInteger()
 
     const { proposals } = await getActiveProposals(env, proposalsTime)
-    logger.info(
-      { proposalsTime, proposals },
-      'Active proposals fetched successfully',
-    )
+    logger.info('Active proposals fetched successfully', {
+      proposalsTime,
+      proposals,
+    })
 
     const fid = await getUserFid()
 
@@ -169,23 +157,23 @@ void (async () => {
       const addresses = await getFollowerAddresses(follower)
       const daos = await getFollowerDAOs(follower, addresses)
 
-      logger.info(
-        { daos },
-        `DAO ids for follower fid ${follower.toString()} fetched and processed`,
-      )
+      logger.debug('DAO IDs for follower processed', {
+        followerFid: follower,
+        daos,
+      })
     }
 
     proposalsTime = nowDateTime.toUnixInteger()
     await setCache('proposals_time', proposalsTime)
-    logger.info({ proposalsTime }, 'Proposals time cached successfully')
+    logger.info('Proposals time cached successfully', { proposalsTime })
   } catch (error) {
     if (error instanceof Error) {
-      logger.error(
-        { message: error.message, stack: error.stack },
-        'Error executing async function',
-      )
+      logger.error('Error executing async function', {
+        message: error.message,
+        stack: error.stack,
+      })
     } else {
-      logger.error({ error }, 'Unknown error occurred')
+      logger.error('Unknown error occurred', { error })
     }
   }
 })()
