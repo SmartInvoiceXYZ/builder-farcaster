@@ -1,23 +1,30 @@
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import pkg from './package.json' // Import the package.json file
 
-// Export Vite configuration
+// Combine dependencies and devDependencies if needed
+const externalDeps = [
+  ...Object.keys(pkg.dependencies || {}),
+  ...Object.keys(pkg.devDependencies || {}),
+]
+
 export default defineConfig({
   plugins: [
     // Support for TypeScript path aliases
     tsconfigPaths(),
   ],
   build: {
-    target: 'node22',
+    target: 'es2022', // Align with ES target for clarity
     lib: {
       entry: './src/index.ts',
-      formats: ['es'], // Output as ES module for consistency
-      fileName: `index`,
+      formats: ['es', 'cjs'], // ES and CommonJS for compatibility
+      fileName: 'index',
     },
     rollupOptions: {
-      // Prevent bundling dependencies
-      external: ['dotenv', 'pino', '@prisma/client'],
+      treeshake: true, // Ensure tree-shaking is on
+      external: externalDeps, // Use dynamically imported dependencies
     },
     outDir: 'dist', // Output directory
+    emptyOutDir: true, // Clean output directory before builds
   },
 })
