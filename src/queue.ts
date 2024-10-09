@@ -1,18 +1,16 @@
 import { PrismaClient } from '@prisma/client'
 import type { JsonValue } from 'type-fest'
+import { v4 as uuidv4 } from 'uuid'
 
 const prisma = new PrismaClient()
 
 /**
  * Adds a task to the queue for processing.
- * @param taskId - The unique identifier for the task.
  * @param data - The data associated with the task.
  * @returns Resolves when the task has been successfully added to the queue.
  */
-export async function addToQueue(
-  taskId: string,
-  data: JsonValue,
-): Promise<void> {
+export async function addToQueue(data: JsonValue): Promise<void> {
+  const taskId = uuidv4()
   const timestamp = new Date()
   const dataString = JSON.stringify(data)
 
