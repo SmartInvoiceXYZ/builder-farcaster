@@ -8,6 +8,18 @@ dotenv.config()
 const envSchema = z.object({
   WARPCAST_ACCESS_TOKEN: z.string().min(1, 'WARPCAST_ACCESS_TOKEN is required'),
   WARPCAST_BASE_URL: z.string().url('WARPCAST_BASE_URL must be a valid URL'),
+  BUILDER_SUBGRAPH_ETHEREUM_URL: z
+    .string()
+    .url('BUILDER_SUBGRAPH_ETHEREUM_URL must be a valid URL'),
+  BUILDER_SUBGRAPH_BASE_URL: z
+    .string()
+    .url('BUILDER_SUBGRAPH_BASE_URL must be a valid URL'),
+  BUILDER_SUBGRAPH_OPTIMISM_URL: z
+    .string()
+    .url('BUILDER_SUBGRAPH_OPTIMISM_URL must be a valid URL'),
+  BUILDER_SUBGRAPH_ZORA_URL: z
+    .string()
+    .url('BUILDER_SUBGRAPH_ZORA_URL must be a valid URL'),
   NODE_ENV: z.enum(['development', 'production', 'test']),
 })
 
