@@ -132,22 +132,7 @@ async function getUserFid() {
 // Example of handling some application logic with caching
 void (async () => {
   try {
-    const nowDateTime = DateTime.now()
-    const timeCacheKey = 'proposals_time'
-    let proposalsTime =
-      (await getCache<number | null>(timeCacheKey, CACHE_MAX_AGE_MS)) ??
-      nowDateTime.minus({ week: 1 }).toUnixInteger()
-
-    const { proposals } = await getActiveProposals(env, proposalsTime)
-    logger.info(
-      { proposalsTime, proposals },
-      'Active proposals fetched successfully',
-    )
-
-    const fid = await getUserFid()
-
-    const followers = await getFollowerFids(fid)
-
+    const followers = await getFollowerFids(await getUserFid())
     for (const follower of followers) {
       const addresses = await getFollowerAddresses(follower)
       const daos = await getFollowerDAOs(follower, addresses)
@@ -159,6 +144,18 @@ void (async () => {
         )
       }
     }
+
+    const nowDateTime = DateTime.now()
+    const timeCacheKey = 'proposals_time'
+    let proposalsTime =
+      (await getCache<number | null>(timeCacheKey, CACHE_MAX_AGE_MS)) ??
+      nowDateTime.minus({ week: 1 }).toUnixInteger()
+
+    const { proposals } = await getActiveProposals(env, proposalsTime)
+    logger.info(
+      { proposalsTime, proposals },
+      'Active proposals fetched successfully',
+    )
 
     proposalsTime = nowDateTime.toUnixInteger()
     await setCache(timeCacheKey, proposalsTime)
