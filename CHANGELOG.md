@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.2] - 2024-10-09
+
+### 🚀 Features
+
+- *(builder)* Add `Env` interface to `types.ts`
+- *(config)* Add builder subgraph URLs to env schema
+- *(services)* Add `getDAOsForOwners` to fetch DAO data
+- *(build)* Enhance `vite.config.ts` for better build process
+- *(index)* Fetch and cache DAOs for follower fids
+- *(builder)* Add `getActiveProposals` function
+- *(index)* Add proposal caching and fetching logic
+- *(logger)* Set log level based on environment
+- *(builder)* Add `name` field to dao in proposals
+
+### 🐛 Bug Fixes
+
+- *(index)* Log `verificationAddresses` object on fetch
+- *(builder)* Remove redundant vote time filters
+- *(index)* Log comprehensive debug information
+
+### 🚜 Refactor
+
+- *(types)* Update `Env` type to include `BuilderEnv`
+- *(builder)* Rename `fetch-daos-for-owners` to `get-daos-for-owners`
+- *(cache)* Standardize cache keys with `toString` method
+- *(index)* Simplify type imports and references
+- *(index)* Extract follower caching logic to function
+- *(index)* Extract `getFollowerAddresses` function
+- *(index)* Extract dao fetching logic to `getFollowerDAOs`
+- *(index)* Extract `getUserFid` function
+- *(index)* Remove redundant log data and rename vars
+- *(logging)* Simplify and structure logging details
+- *(logger)* Restructure log messages for clarity
+- *(index)* Consolidate follower processing logic
+- *(index)* Reorder logic for proposal handling
+- *(index)* Simplify follower address and DAOs check
+- *(index)* Streamline data fetching and caching
+- *(index)* Extract active proposals handling to function
+- *(index)* Add logging for proposal processing
+
+### ⚙️ Miscellaneous Tasks
+
+- *(tsconfig)* Change moduleResolution to `bundler`
+
 ## [1.0.0-alpha.1] - 2024-10-09
 
 ### 🚀 Features
