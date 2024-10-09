@@ -1,10 +1,10 @@
+import { getCache, setCache } from '@/cache'
+import { env } from '@/config'
+import { logger } from '@/logger'
 import { getFollowers } from '@/services/warpcast/get-followers'
+import { getMe } from '@/services/warpcast/get-me'
+import { getVerifications } from '@/services/warpcast/get-verifications'
 import { User, Verification } from '@/services/warpcast/types'
-import { getCache, setCache } from './cache'
-import { env } from './config'
-import { logger } from './logger'
-import { getMe } from './services/warpcast/get-me'
-import { getVerifications } from './services/warpcast/get-verifications'
 
 // Constants
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
