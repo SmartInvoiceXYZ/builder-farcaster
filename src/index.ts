@@ -126,29 +126,36 @@ async function getFollowerDAOs(
   return daoIds
 }
 
+/**
+ * Retrieves the user's FID (Federated ID). This function first attempts to fetch the
+ * FID from a cache. If the FID is not found in the cache, it fetches the FID via
+ * the `getMe` function and then stores it in the cache for future requests.
+ * @returns A promise that resolves to the user's FID.
+ */
+async function getUserFid() {
+  // Attempt to get cached user fid
+  let fid = await getCache<number | null>('user_fid', CACHE_MAX_AGE_MS)
+
+  if (fid) {
+    logger.info('User fid fetched from cache')
+  } else {
+    // Fetch the user if fid is not in cache
+    const response = await getMe(env)
+    fid = response.user.fid
+    // Cache only the fid of the user
+    await setCache('user_fid', fid)
+    logger.info({ fid }, 'getMe function executed and fid cached successfully')
+  }
+  return fid
+}
+
 // Example of handling some application logic with caching
 void (async () => {
   try {
-    // Attempt to get cached user fid
-    let fid = await getCache<number | null>('user_fid', CACHE_MAX_AGE_MS)
-
-    if (fid) {
-      logger.info('User fid fetched from cache')
-    } else {
-      // Fetch the user if fid is not in cache
-      const response = await getMe(env)
-      fid = response.user.fid
-      // Cache only the fid of the user
-      await setCache('user_fid', fid)
-      logger.info(
-        { fid },
-        'getMe function executed and fid cached successfully',
-      )
-    }
+    const fid = await getUserFid()
 
     const followerFids = await getFollowerFids(fid)
 
-    // Fetch verifications for each follower fid and cache them
     for (const followerFid of followerFids) {
       const addresses = await getFollowerAddresses(followerFid)
       const daos = await getFollowerDAOs(followerFid, addresses)
