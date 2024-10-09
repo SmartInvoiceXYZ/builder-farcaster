@@ -49,6 +49,42 @@ async function getFollowerFids(fid: number) {
   return followerFids
 }
 
+/**
+ * Retrieves the follower's verification addresses from cache or fetches them if not found in cache.
+ * @param followerFid - The Follower's unique identifier.
+ * @returns - A promise that resolves to an array of verification addresses.
+ */
+async function getFollowerAddresses(followerFid: number) {
+  let verificationAddresses = await getCache<string[] | null>(
+    `verifications_${followerFid.toString()}`,
+    CACHE_MAX_AGE_MS,
+  )
+
+  if (verificationAddresses) {
+    logger.info(
+      { verificationAddresses },
+      `Verification addresses for fid ${followerFid.toString()} fetched from cache`,
+    )
+  } else {
+    // Fetch the verifications if not in cache
+    const verificationResponse = await getVerifications(env, followerFid)
+    verificationAddresses = verificationResponse.verifications.map(
+      (verification) => verification.address,
+    )
+
+    // Cache the verification addresses
+    await setCache(
+      `verifications_${followerFid.toString()}`,
+      verificationAddresses,
+    )
+    logger.info(
+      { verificationAddresses },
+      `getVerifications function executed and verification addresses cached successfully for fid ${followerFid.toString()}`,
+    )
+  }
+  return verificationAddresses
+}
+
 // Example of handling some application logic with caching
 void (async () => {
   try {
@@ -73,33 +109,7 @@ void (async () => {
 
     // Fetch verifications for each follower fid and cache them
     for (const followerFid of followerFids) {
-      let verificationAddresses = await getCache<string[] | null>(
-        `verifications_${followerFid.toString()}`,
-        CACHE_MAX_AGE_MS,
-      )
-
-      if (verificationAddresses) {
-        logger.info(
-          { verificationAddresses },
-          `Verification addresses for fid ${followerFid.toString()} fetched from cache`,
-        )
-      } else {
-        // Fetch the verifications if not in cache
-        const verificationResponse = await getVerifications(env, followerFid)
-        verificationAddresses = verificationResponse.verifications.map(
-          (verification) => verification.address,
-        )
-
-        // Cache the verification addresses
-        await setCache(
-          `verifications_${followerFid.toString()}`,
-          verificationAddresses,
-        )
-        logger.info(
-          { verificationAddresses },
-          `getVerifications function executed and verification addresses cached successfully for fid ${followerFid.toString()}`,
-        )
-      }
+      const verificationAddresses = await getFollowerAddresses(followerFid)
 
       // Fetch DAOs for each follower fid using verification addresses and cache DAO ids only
       let daoIds = await getCache<string[] | null>(
