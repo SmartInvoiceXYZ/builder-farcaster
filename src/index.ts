@@ -127,8 +127,17 @@ async function getUserFid() {
   return fid
 }
 
-// Handling some application logic with caching
-void (async () => {
+/**
+ * Handles the active proposals by fetching, processing, and updating necessary information.
+ * The method performs the following steps:
+ * 1. Fetches the current date and time.
+ * 2. Retrieves the last proposals fetch time from the cache.
+ * 3. Fetches the active proposals from an external source.
+ * 4. Processes each follower to intersect their DAOs with active proposals.
+ * 5. Updates the proposals fetch time in the cache.
+ * @returns A promise that resolves when the process is complete.
+ */
+async function handleActiveProposals() {
   try {
     const nowDateTime = DateTime.now()
     const timeCacheKey = 'proposals_time'
@@ -179,4 +188,9 @@ void (async () => {
       logger.error({ error }, 'Unknown error occurred')
     }
   }
+}
+
+// Handling some application logic with caching
+void (async () => {
+  await handleActiveProposals()
 })()
