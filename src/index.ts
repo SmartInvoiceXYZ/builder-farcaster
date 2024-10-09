@@ -1,12 +1,14 @@
 import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { logger } from '@/logger'
+import { addToQueue } from '@/queue'
 import { getActiveProposals } from '@/services/builder/get-active-proposals'
 import { getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
 import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
 import { DateTime } from 'luxon'
+import { JsonValue } from 'type-fest'
 
 // Constants
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
@@ -181,14 +183,12 @@ async function handleActiveProposals() {
           continue
         }
 
-        logger.info(
-          {
-            proposalNumber: proposal.proposalNumber,
-            title: proposal.title,
-            daoName: proposal.dao.name,
-          },
-          `Proposal ${proposal.proposalNumber.toString()} - ${proposal.title} for ${proposal.dao.name}`,
-        )
+        // Add the proposal to the queue for notifications
+        await addToQueue({
+          type: 'notification',
+          recipient: follower,
+          proposal: proposal as unknown as JsonValue,
+        })
       }
     }
 
