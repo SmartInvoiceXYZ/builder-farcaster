@@ -32,23 +32,21 @@ logger.info(
  * @returns - A promise that resolves to an array of follower FIDs.
  */
 async function getFollowerFids(fid: number) {
-  let followerFids = await getCache<number[] | null>(
-    `followers_fids_${fid.toString()}`,
-    CACHE_MAX_AGE_MS,
-  )
+  const cacheKey = `followers_fids_${fid.toString()}`
+  let followers = await getCache<number[] | null>(cacheKey, CACHE_MAX_AGE_MS)
 
-  if (followerFids) {
-    logger.debug({ fid, followerFids }, 'Follower FIDs fetched from cache')
+  if (followers) {
+    logger.debug({ fid, followers }, 'Follower FIDs fetched from cache')
   } else {
-    const response = await getFollowers(env, fid)
-    followerFids = response.users.map((user) => user.fid) // Extract FIDs only
-    await setCache(`followers_fids_${fid.toString()}`, followerFids)
+    const { users } = await getFollowers(env, fid)
+    followers = users.map((user) => user.fid) // Extract FIDs only
+    await setCache(cacheKey, followers)
     logger.info(
-      { fid, followerFids },
+      { fid, followers },
       'Follower FIDs fetched and cached successfully',
     )
   }
-  return followerFids
+  return followers
 }
 
 /**
@@ -63,9 +61,9 @@ async function getFollowerAddresses(follower: number) {
   if (addresses) {
     logger.debug({ follower, addresses }, 'Addresses fetched from cache')
   } else {
-    const verificationResponse = await getVerifications(env, follower)
-    addresses = verificationResponse.verifications.map(
-      (verification) => verification.address,
+    const { verifications } = await getVerifications(env, follower)
+    addresses = verifications.map((verification) =>
+      verification.address.toLowerCase(),
     )
     await setCache(cacheKey, addresses)
     logger.info(
@@ -95,8 +93,8 @@ async function getFollowerDAOs(follower: number, addresses: string[]) {
     )
   } else {
     if (addresses.length > 0) {
-      const daoResponse = await getDAOsForOwners(env, addresses)
-      daoIds = daoResponse.daos.map((dao) => dao.id) // Extract DAO IDs only
+      const { daos } = await getDAOsForOwners(env, addresses)
+      daoIds = daos.map((dao) => dao.id.toLowerCase()) // Extract DAO IDs only
       await setCache(cacheKey, daoIds)
       logger.info(
         { follower, daoIds },
@@ -121,15 +119,15 @@ async function getUserFid() {
   if (fid) {
     logger.debug({ fid }, 'User FID fetched from cache')
   } else {
-    const response = await getMe(env)
-    fid = response.user.fid
+    const { user } = await getMe(env)
+    fid = user.fid
     await setCache(cacheKey, fid)
     logger.info({ fid }, 'User FID fetched and cached successfully')
   }
   return fid
 }
 
-// Example of handling some application logic with caching
+// Handling some application logic with caching
 void (async () => {
   try {
     const nowDateTime = DateTime.now()
@@ -152,16 +150,20 @@ void (async () => {
     const followers = await getFollowerFids(await getUserFid())
     for (const follower of followers) {
       const addresses = await getFollowerAddresses(follower)
-      const daos = await getFollowerDAOs(follower, addresses)
-
-      if (!(addresses.length > 0 && daos && daos.length > 0)) {
+      if (addresses.length === 0) {
         continue
       }
 
-      logger.debug(
-        { follower, addresses, daos },
-        'Follower with address and DAOs processed',
-      )
+      const daos = await getFollowerDAOs(follower, addresses)
+      if (!daos || daos.length <= 0) {
+        continue
+      }
+
+      for (const proposal of proposals) {
+        if (!daos.includes(proposal.dao.id)) {
+          continue
+        }
+      }
     }
 
     proposalsTime = nowDateTime.toUnixInteger()
