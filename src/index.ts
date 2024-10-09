@@ -1,7 +1,7 @@
 import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { logger } from '@/logger'
-import { Dao, getDAOsForOwners } from '@/services/builder/fetch-daos-for-owners'
+import { Dao, getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
 import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
