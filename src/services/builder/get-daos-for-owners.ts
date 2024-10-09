@@ -3,7 +3,7 @@ import { gql, GraphQLClient } from 'graphql-request'
 import { flatMap, pipe, uniqueBy } from 'remeda'
 import { JsonObject } from 'type-fest'
 
-export interface Dao {
+interface Dao {
   id: string
   name: string
 }

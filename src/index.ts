@@ -1,11 +1,10 @@
 import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { logger } from '@/logger'
-import { Dao, getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
+import { getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
 import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
-import { User, Verification } from '@/services/warpcast/types'
 
 // Constants
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
@@ -51,7 +50,7 @@ void (async () => {
     } else {
       // Fetch the followers if not in cache
       const response = await getFollowers(env, fid)
-      followerFids = response.users.map((user: User) => user.fid) // Extract fids only
+      followerFids = response.users.map((user) => user.fid) // Extract fids only
       // Cache the result
       await setCache(`followers_fids_${fid.toString()}`, followerFids)
       logger.info(
@@ -76,7 +75,7 @@ void (async () => {
         // Fetch the verifications if not in cache
         const verificationResponse = await getVerifications(env, followerFid)
         verificationAddresses = verificationResponse.verifications.map(
-          (verification: Verification) => verification.address,
+          (verification) => verification.address,
         )
 
         // Cache the verification addresses
@@ -105,7 +104,7 @@ void (async () => {
         // Fetch DAOs if not in cache
         if (verificationAddresses.length > 0) {
           const daoResponse = await getDAOsForOwners(env, verificationAddresses)
-          daoIds = daoResponse.daos.map((dao: Dao) => dao.id) // Extract DAO ids only
+          daoIds = daoResponse.daos.map((dao) => dao.id) // Extract DAO ids only
 
           // Cache the DAO ids
           await setCache(`dao_ids_${followerFid.toString()}`, daoIds)
