@@ -18,6 +18,37 @@ if (env.NODE_ENV !== 'production') {
 }
 logger.info({ mode: env.NODE_ENV }, 'Application running mode')
 
+/**
+ * Retrieves the follower FIDs (unique follower IDs) for a given FID (unique ID).
+ * The method attempts to fetch the follower FIDs from the cache first. If they are not
+ * found in the cache, it fetches them from the source and caches the result for future use.
+ * @param fid - The unique ID for which to find the follower FIDs.
+ * @returns - A promise that resolves to an array of follower FIDs.
+ */
+async function getFollowerFids(fid: number) {
+  // Assuming that fid will not be null or undefined at this point
+  // Fetch followers and use caching as well
+  let followerFids = await getCache<number[] | null>(
+    `followers_fids_${fid.toString()}`,
+    CACHE_MAX_AGE_MS,
+  )
+
+  if (followerFids) {
+    logger.info('Follower fids fetched from cache')
+  } else {
+    // Fetch the followers if not in cache
+    const response = await getFollowers(env, fid)
+    followerFids = response.users.map((user) => user.fid) // Extract fids only
+    // Cache the result
+    await setCache(`followers_fids_${fid.toString()}`, followerFids)
+    logger.info(
+      { followerFids },
+      'getFollowers function executed and follower fids cached successfully',
+    )
+  }
+  return followerFids
+}
+
 // Example of handling some application logic with caching
 void (async () => {
   try {
@@ -38,26 +69,7 @@ void (async () => {
       )
     }
 
-    // Assuming that fid will not be null or undefined at this point
-    // Fetch followers and use caching as well
-    let followerFids = await getCache<number[] | null>(
-      `followers_fids_${fid.toString()}`,
-      CACHE_MAX_AGE_MS,
-    )
-
-    if (followerFids) {
-      logger.info('Follower fids fetched from cache')
-    } else {
-      // Fetch the followers if not in cache
-      const response = await getFollowers(env, fid)
-      followerFids = response.users.map((user) => user.fid) // Extract fids only
-      // Cache the result
-      await setCache(`followers_fids_${fid.toString()}`, followerFids)
-      logger.info(
-        { followerFids },
-        'getFollowers function executed and follower fids cached successfully',
-      )
-    }
+    const followerFids = await getFollowerFids(fid)
 
     // Fetch verifications for each follower fid and cache them
     for (const followerFid of followerFids) {
