@@ -42,8 +42,7 @@ void (async () => {
     // Assuming that fid will not be null or undefined at this point
     // Fetch followers and use caching as well
     let followerFids = await getCache<number[] | null>(
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `followers_fids_${fid}`,
+      `followers_fids_${fid.toString()}`,
       CACHE_MAX_AGE_MS,
     )
 
@@ -54,8 +53,7 @@ void (async () => {
       const response = await getFollowers(env, fid)
       followerFids = response.users.map((user: User) => user.fid) // Extract fids only
       // Cache the result
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      await setCache(`followers_fids_${fid}`, followerFids)
+      await setCache(`followers_fids_${fid.toString()}`, followerFids)
       logger.info(
         { followerFids },
         'getFollowers function executed and follower fids cached successfully',
@@ -65,16 +63,14 @@ void (async () => {
     // Fetch verifications for each follower fid and cache them
     for (const followerFid of followerFids) {
       let verificationAddresses = await getCache<string[] | null>(
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `verifications_${followerFid}`,
+        `verifications_${followerFid.toString()}`,
         CACHE_MAX_AGE_MS,
       )
 
       if (verificationAddresses) {
         logger.info(
           { verificationAddresses },
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          `Verification addresses for fid ${followerFid} fetched from cache`,
+          `Verification addresses for fid ${followerFid.toString()} fetched from cache`,
         )
       } else {
         // Fetch the verifications if not in cache
@@ -84,39 +80,38 @@ void (async () => {
         )
 
         // Cache the verification addresses
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        await setCache(`verifications_${followerFid}`, verificationAddresses)
+        await setCache(
+          `verifications_${followerFid.toString()}`,
+          verificationAddresses,
+        )
         logger.info(
           { verificationAddresses },
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          `getVerifications function executed and verification addresses cached successfully for fid ${followerFid}`,
+          `getVerifications function executed and verification addresses cached successfully for fid ${followerFid.toString()}`,
         )
       }
 
-      // Fetch DAOs for each follower fid using verification addresses and cache them
-      let daos = await getCache<Dao[] | null>(
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `daos_${followerFid}`,
+      // Fetch DAOs for each follower fid using verification addresses and cache DAO ids only
+      let daoIds = await getCache<string[] | null>(
+        `dao_ids_${followerFid.toString()}`,
         CACHE_MAX_AGE_MS,
       )
 
-      if (daos) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        logger.info({ daos }, `DAOs for fid ${followerFid} fetched from cache`)
+      if (daoIds) {
+        logger.info(
+          { daoIds },
+          `DAO ids for fid ${followerFid.toString()} fetched from cache`,
+        )
       } else {
         // Fetch DAOs if not in cache
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (verificationAddresses && verificationAddresses.length > 0) {
+        if (verificationAddresses.length > 0) {
           const daoResponse = await getDAOsForOwners(env, verificationAddresses)
-          daos = daoResponse.daos
+          daoIds = daoResponse.daos.map((dao: Dao) => dao.id) // Extract DAO ids only
 
-          // Cache the DAOs
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          await setCache(`daos_${followerFid}`, daos)
+          // Cache the DAO ids
+          await setCache(`dao_ids_${followerFid.toString()}`, daoIds)
           logger.info(
-            { daos },
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            `getDAOsForOwners function executed and DAOs cached successfully for fid ${followerFid}`,
+            { daoIds },
+            `getDAOsForOwners function executed and DAO ids cached successfully for fid ${followerFid.toString()}`,
           )
         }
       }
