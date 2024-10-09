@@ -35,8 +35,6 @@ export const getActiveProposals = async (
         orderDirection: desc
         where: {
           timeCreated_gte: ${time}
-          voteStart_gte: ${time}
-          voteEnd_lte: ${time}
           queued: false
           executed: false
           canceled: false
