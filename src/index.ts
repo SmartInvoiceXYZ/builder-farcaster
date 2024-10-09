@@ -71,6 +71,7 @@ void (async () => {
 
       if (verificationAddresses) {
         logger.info(
+          { verificationAddresses },
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           `Verification addresses for fid ${followerFid} fetched from cache`,
         )
