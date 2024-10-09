@@ -1,10 +1,12 @@
 import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { logger } from '@/logger'
+import { getActiveProposals } from '@/services/builder/get-active-proposals'
 import { getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
 import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
+import { DateTime } from 'luxon'
 
 // Constants
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
@@ -148,6 +150,17 @@ async function getUserFid() {
 // Example of handling some application logic with caching
 void (async () => {
   try {
+    const nowDateTime = DateTime.now()
+    let proposalsTime =
+      (await getCache<number | null>('proposals_time', CACHE_MAX_AGE_MS)) ??
+      nowDateTime.minus({ week: 1 }).toUnixInteger()
+
+    const { proposals } = await getActiveProposals(env, proposalsTime)
+    logger.info(
+      { proposalsTime, proposals },
+      'Active proposals fetched successfully',
+    )
+
     const fid = await getUserFid()
 
     const followers = await getFollowerFids(fid)
@@ -161,6 +174,10 @@ void (async () => {
         `DAO ids for follower fid ${follower.toString()} fetched and processed`,
       )
     }
+
+    proposalsTime = nowDateTime.toUnixInteger()
+    await setCache('proposals_time', proposalsTime)
+    logger.info({ proposalsTime }, 'Proposals time cached successfully')
   } catch (error) {
     if (error instanceof Error) {
       logger.error(
