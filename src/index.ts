@@ -22,7 +22,7 @@ logger.info({ mode: env.NODE_ENV }, 'Application running mode')
 void (async () => {
   try {
     // Attempt to get cached user fid
-    let fid = await getCache<number>('user_fid', CACHE_MAX_AGE_MS)
+    let fid = await getCache<number | null>('user_fid', CACHE_MAX_AGE_MS)
 
     if (fid) {
       logger.info('User fid fetched from cache')
@@ -40,7 +40,7 @@ void (async () => {
 
     // Assuming that fid will not be null or undefined at this point
     // Fetch followers and use caching as well
-    let followerFids = await getCache<number[]>(
+    let followerFids = await getCache<number[] | null>(
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       `followers_fids_${fid}`,
       CACHE_MAX_AGE_MS,
@@ -63,7 +63,7 @@ void (async () => {
 
     // Fetch verifications for each follower fid and cache them
     for (const followerFid of followerFids) {
-      let verificationAddresses = await getCache<string[]>(
+      let verificationAddresses = await getCache<string[] | null>(
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         `verifications_${followerFid}`,
         CACHE_MAX_AGE_MS,
