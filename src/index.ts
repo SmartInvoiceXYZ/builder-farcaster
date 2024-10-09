@@ -12,14 +12,17 @@ import { DateTime } from 'luxon'
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
 
 // Log environment information using structured logging
-logger.info('Environment information', {
-  baseUrl: env.WARPCAST_BASE_URL,
-  accessToken:
-    env.NODE_ENV !== 'production'
-      ? env.WARPCAST_ACCESS_TOKEN
-      : 'Access token is set',
-  mode: env.NODE_ENV,
-})
+logger.info(
+  {
+    baseUrl: env.WARPCAST_BASE_URL,
+    accessToken:
+      env.NODE_ENV !== 'production'
+        ? env.WARPCAST_ACCESS_TOKEN
+        : 'Access token is set',
+    mode: env.NODE_ENV,
+  },
+  'Environment information',
+)
 
 /**
  * Retrieves the follower FIDs (unique follower IDs) for a given FID (unique ID).
@@ -35,80 +38,70 @@ async function getFollowerFids(fid: number) {
   )
 
   if (followerFids) {
-    logger.debug('Follower FIDs fetched from cache', { fid, followerFids })
+    logger.debug({ fid, followerFids }, 'Follower FIDs fetched from cache')
   } else {
     const response = await getFollowers(env, fid)
     followerFids = response.users.map((user) => user.fid) // Extract FIDs only
     await setCache(`followers_fids_${fid.toString()}`, followerFids)
-    logger.info('Follower FIDs fetched and cached successfully', {
-      fid,
-      followerFids,
-    })
+    logger.info(
+      { fid, followerFids },
+      'Follower FIDs fetched and cached successfully',
+    )
   }
   return followerFids
 }
 
 /**
  * Retrieves the follower's verification addresses from cache or fetches them if not found in cache.
- * @param followerFid - The Follower's unique identifier.
+ * @param follower - The Follower's unique identifier.
  * @returns - A promise that resolves to an array of verification addresses.
  */
-async function getFollowerAddresses(followerFid: number) {
-  let verificationAddresses = await getCache<string[] | null>(
-    `verifications_${followerFid.toString()}`,
-    CACHE_MAX_AGE_MS,
-  )
+async function getFollowerAddresses(follower: number) {
+  const cacheKey = `addresses_${follower.toString()}`
+  let addresses = await getCache<string[] | null>(cacheKey, CACHE_MAX_AGE_MS)
 
-  if (verificationAddresses) {
-    logger.debug('Verification addresses fetched from cache', {
-      followerFid,
-      verificationAddresses,
-    })
+  if (addresses) {
+    logger.debug({ follower, addresses }, 'Addresses fetched from cache')
   } else {
-    const verificationResponse = await getVerifications(env, followerFid)
-    verificationAddresses = verificationResponse.verifications.map(
+    const verificationResponse = await getVerifications(env, follower)
+    addresses = verificationResponse.verifications.map(
       (verification) => verification.address,
     )
-    await setCache(
-      `verifications_${followerFid.toString()}`,
-      verificationAddresses,
+    await setCache(cacheKey, addresses)
+    logger.info(
+      { follower, addresses },
+      'Addresses fetched and cached successfully',
     )
-    logger.info('Verification addresses fetched and cached successfully', {
-      followerFid,
-      verificationAddresses,
-    })
   }
-  return verificationAddresses
+  return addresses
 }
 
 /**
  * Fetches the DAO (Decentralized Autonomous Organization) identifiers associated with a given follower ID.
  * The method first attempts to retrieve these identifiers from cache; if not present, it fetches them
  * using the provided verification addresses, caches the result, and then returns the identifiers.
- * @param followerFid - The unique identifier of the follower.
- * @param verificationAddresses - An array of addresses used to verify ownership.
+ * @param follower - The unique identifier of the follower.
+ * @param addresses - An array of addresses used to verify ownership.
  * @returns A promise that resolves to an array of DAO identifiers, or null if none are found.
  */
-async function getFollowerDAOs(
-  followerFid: number,
-  verificationAddresses: string[],
-) {
-  let daoIds = await getCache<string[] | null>(
-    `dao_ids_${followerFid.toString()}`,
-    CACHE_MAX_AGE_MS,
-  )
+async function getFollowerDAOs(follower: number, addresses: string[]) {
+  const cacheKey = `dao_ids_${follower.toString()}`
+  let daoIds = await getCache<string[] | null>(cacheKey, CACHE_MAX_AGE_MS)
 
   if (daoIds) {
-    logger.debug('DAO IDs fetched from cache', { followerFid, daoIds })
+    logger.debug(
+      { followerFid: follower, daoIds },
+      'DAO IDs fetched from cache',
+    )
   } else {
-    if (verificationAddresses.length > 0) {
-      const daoResponse = await getDAOsForOwners(env, verificationAddresses)
+    if (addresses.length > 0) {
+      const daoResponse = await getDAOsForOwners(env, addresses)
       daoIds = daoResponse.daos.map((dao) => dao.id) // Extract DAO IDs only
-      await setCache(`dao_ids_${followerFid.toString()}`, daoIds)
-      logger.info('DAO IDs fetched and cached successfully', {
-        followerFid,
-        daoIds,
-      })
+      await setCache(cacheKey, daoIds)
+      logger.info(
+        { follower, daoIds },
+        'DAO IDs fetched and cached successfully',
+      )
     }
   }
 
@@ -122,15 +115,16 @@ async function getFollowerDAOs(
  * @returns A promise that resolves to the user's FID.
  */
 async function getUserFid() {
-  let fid = await getCache<number | null>('user_fid', CACHE_MAX_AGE_MS)
+  const cacheKey = 'user_fid'
+  let fid = await getCache<number | null>(cacheKey, CACHE_MAX_AGE_MS)
 
   if (fid) {
-    logger.debug('User FID fetched from cache', { fid })
+    logger.debug({ fid }, 'User FID fetched from cache')
   } else {
     const response = await getMe(env)
     fid = response.user.fid
-    await setCache('user_fid', fid)
-    logger.info('User FID fetched and cached successfully', { fid })
+    await setCache(cacheKey, fid)
+    logger.info({ fid }, 'User FID fetched and cached successfully')
   }
   return fid
 }
@@ -139,15 +133,16 @@ async function getUserFid() {
 void (async () => {
   try {
     const nowDateTime = DateTime.now()
+    const timeCacheKey = 'proposals_time'
     let proposalsTime =
-      (await getCache<number | null>('proposals_time', CACHE_MAX_AGE_MS)) ??
+      (await getCache<number | null>(timeCacheKey, CACHE_MAX_AGE_MS)) ??
       nowDateTime.minus({ week: 1 }).toUnixInteger()
 
     const { proposals } = await getActiveProposals(env, proposalsTime)
-    logger.info('Active proposals fetched successfully', {
-      proposalsTime,
-      proposals,
-    })
+    logger.info(
+      { proposalsTime, proposals },
+      'Active proposals fetched successfully',
+    )
 
     const fid = await getUserFid()
 
@@ -157,23 +152,20 @@ void (async () => {
       const addresses = await getFollowerAddresses(follower)
       const daos = await getFollowerDAOs(follower, addresses)
 
-      logger.debug('DAO IDs for follower processed', {
-        followerFid: follower,
-        daos,
-      })
+      logger.debug({ follower, daos }, 'DAO IDs for follower processed')
     }
 
     proposalsTime = nowDateTime.toUnixInteger()
-    await setCache('proposals_time', proposalsTime)
-    logger.info('Proposals time cached successfully', { proposalsTime })
+    await setCache(timeCacheKey, proposalsTime)
+    logger.info({ proposalsTime }, 'Proposals time cached successfully')
   } catch (error) {
     if (error instanceof Error) {
-      logger.error('Error executing async function', {
-        message: error.message,
-        stack: error.stack,
-      })
+      logger.error(
+        { message: error.message, stack: error.stack },
+        'Error executing async function',
+      )
     } else {
-      logger.error('Unknown error occurred', { error })
+      logger.error({ error }, 'Unknown error occurred')
     }
   }
 })()
