@@ -19,6 +19,9 @@ importers:
       graphql-request:
         specifier: 7.1.0
         version: 7.1.0(graphql@16.9.0)
+      luxon:
+        specifier: 3.5.0
+        version: 3.5.0
       pino:
         specifier: 9.4.0
         version: 9.4.0
@@ -44,6 +47,9 @@ importers:
       '@types/eslint__js':
         specifier: 8.42.3
         version: 8.42.3
+      '@types/luxon':
+        specifier: 3.4.2
+        version: 3.4.2
       '@types/node':
         specifier: 22.7.5
         version: 22.7.5
@@ -694,6 +700,12 @@ packages:
     resolution:
       {
         integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==,
+      }
+
+  '@types/luxon@3.4.2':
+    resolution:
+      {
+        integrity: sha512-TifLZlFudklWlMBfhubvgqTXRzLDI5pCbGa4P8a3wPyUQSW+1xQ5eDsreP9DWHX3tjq1ke96uYG/nwundroWcA==,
       }
 
   '@types/mdast@4.0.4':
@@ -2068,6 +2080,13 @@ packages:
       {
         integrity: sha512-edNu/8D5MKVfGVFRhFf8aAxiTM6Wumfz5XsaatSxlD3w4R1d/WEKUTydCdPGbl9K7QG/Ca3GnDV2sIKIpXRQcw==,
       }
+
+  luxon@3.5.0:
+    resolution:
+      {
+        integrity: sha512-rh+Zjr6DNfUYR3bPwJEnuwDdqMbxZW7LOQfUN4B54+Cl+0o5zaU9RJ6bcidfDtC1cWCZXQ+nvX8bf6bAji37QQ==,
+      }
+    engines: { node: '>=12' }
 
   magic-string@0.30.11:
     resolution:
@@ -3590,6 +3609,8 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/luxon@3.4.2': {}
+
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -4414,6 +4435,8 @@ snapshots:
   loupe@3.1.1:
     dependencies:
       get-func-name: 2.0.2
+
+  luxon@3.5.0: {}
 
   magic-string@0.30.11:
     dependencies:
