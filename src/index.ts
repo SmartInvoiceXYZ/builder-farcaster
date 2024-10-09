@@ -1,6 +1,7 @@
 import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { logger } from '@/logger'
+import { Dao, getDAOsForOwners } from '@/services/builder/fetch-daos-for-owners'
 import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
@@ -90,6 +91,34 @@ void (async () => {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           `getVerifications function executed and verification addresses cached successfully for fid ${followerFid}`,
         )
+      }
+
+      // Fetch DAOs for each follower fid using verification addresses and cache them
+      let daos = await getCache<Dao[] | null>(
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `daos_${followerFid}`,
+        CACHE_MAX_AGE_MS,
+      )
+
+      if (daos) {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        logger.info({ daos }, `DAOs for fid ${followerFid} fetched from cache`)
+      } else {
+        // Fetch DAOs if not in cache
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (verificationAddresses && verificationAddresses.length > 0) {
+          const daoResponse = await getDAOsForOwners(env, verificationAddresses)
+          daos = daoResponse.daos
+
+          // Cache the DAOs
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          await setCache(`daos_${followerFid}`, daos)
+          logger.info(
+            { daos },
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            `getDAOsForOwners function executed and DAOs cached successfully for fid ${followerFid}`,
+          )
+        }
       }
     }
   } catch (error) {
