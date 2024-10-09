@@ -6,7 +6,10 @@ import { JsonObject } from 'type-fest'
 interface Proposal {
   id: string
   proposalNumber: number
-  dao: { id: string }
+  dao: {
+    id: string
+    name: string
+  }
   title: string
   proposer: string
   timeCreated: string
@@ -45,6 +48,7 @@ export const getActiveProposals = async (
         proposalNumber
         dao {
           id
+          name
         }
         title
         proposer
