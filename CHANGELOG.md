@@ -2,6 +2,76 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.1] - 2024-10-09
+
+### 🚀 Features
+
+- *(index)* Enhance logging and configuration management
+- *(env)* Add environment variable validation
+- *(types)* Add `Env` type for environment configurations
+- *(warpcast)* Add functionality to fetch user followers
+- *(logger)* Configure pino logger for development
+- *(services)* Add `getMe` function to warpcast service
+- *(logger)* Add custom logger using pino
+- *(index)* Add follower retrieval functionality
+- *(cache)* Add cache management with `PrismaClient`
+- *(prisma)* Add initial Prisma schema for caching
+- *(migrations)* Add initial cache table
+- *(cache)* Add caching for `getMe` and `getFollowers`
+- *(services)* Add `getVerifications` method to `warpcast`
+- *(index)* Add caching for follower verifications
+
+### 🐛 Bug Fixes
+
+- *(package)* Set correct entry point in `main`
+- *(package)* Update start script to run correct entry point
+
+### 🚜 Refactor
+
+- *(index)* Simplify server initialization
+- *(tsconfig)* Simplify and update configuration
+- *(index)* Simplify self-executing function
+- *(config)* Rename `env.ts` to `config.ts` and update types
+- *(index)* Replace `dotenv` with custom `config` module
+- *(index)* Replace inline logger with external logger
+- *(index)* Cache user fid instead of entire user object
+- *(cache)* Update type for `getCache` method
+- *(index)* Update import paths to use aliases
+
+### ⚙️ Miscellaneous Tasks
+
+- *(gitignore)* Update ignore list for lock file
+- *(package)* Add `start` script to `package.json`
+- *(build)* Add initial `tsconfig.json` for TypeScript setup
+- *(scripts)* Add `clean` script to remove `dist` folder
+- *(build)* Switch from pnpm to bun for setup and build
+- *(scripts)* Add `lint` script using `eslint`
+- *(package)* Add `type` field to `package.json`
+- *(lint-staged)* Add `lint-staged` config for code formatting
+- *(linting)* Add ESLint configuration
+- *(cliff)* Add git-cliff configuration
+- *(style)* Add prettier configuration
+- *(husky)* Add pre-commit hook for linting and testing
+- *(scripts)* Add vite commands for development and build
+- *(config)* Add vite configuration
+- *(build)* Update start script to use node
+- *(tsconfig)* Add path alias for src directory
+- *(vite)* Add vite-tsconfig-paths plugin
+- *(vite)* Update build config for es module and externals
+- *(scripts)* Update start script to use esm module
+- *(eslint)* Update ignores in eslint config
+- *(tsconfig)* Update compiler settings for esnext
+- *(scripts)* Update `start` script to use `index.js`
+- *(vite)* Update build target and output file name
+- *(vite)* Add `@prisma/client` to external dependencies
+- *(gitignore)* Add `prisma/dev.db` to ignored files
+- *(scripts)* Add `prebuild` script to `package.json`
+- *(scripts)* Add `prestart` script to run build
+
+### ◀️ Revert
+
+- *(build)* Switch from pnpm to bun for setup and build
+
 ## [1.0.0-alpha.0] - 2024-10-07
 
 ### 🚀 Features
