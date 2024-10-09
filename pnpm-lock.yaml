@@ -13,6 +13,9 @@ importers:
       dotenv:
         specifier: 16.4.5
         version: 16.4.5
+      graphql:
+        specifier: 16.9.0
+        version: 16.9.0
       graphql-request:
         specifier: 7.1.0
         version: 7.1.0(graphql@16.9.0)
