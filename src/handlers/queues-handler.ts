@@ -44,11 +44,11 @@ async function handleNotification(taskId: string, data: NotificationData) {
     const votingEndsAt = Number(proposal.voteEnd)
 
     const message =
-      `A new proposal (#${proposalNumber}: "${proposalTitle}") has been created on ${daoName} ` +
+      `📢 A new proposal (#${proposalNumber}: "${proposalTitle}") has been created on ${daoName} ` +
       `around ${toRelativeTime(createdAt)}. ` +
-      `Voting ${isPast(votingStartsAt) ? 'started' : 'starts'} ${toRelativeTime(votingStartsAt)} and ` +
+      `🗳️ Voting ${isPast(votingStartsAt) ? 'started' : 'starts'} ${toRelativeTime(votingStartsAt)} and ` +
       `${isPast(votingEndsAt) ? 'ended' : 'ends'} ${toRelativeTime(votingEndsAt)}. ` +
-      `Check it out for more details and participate in the voting process!`
+      `🚀 Check it out for more details and participate in the voting process!`
     const idempotencyKey = sha256(message).toString()
 
     const result = await sendDirectCast(env, recipient, message, idempotencyKey)
