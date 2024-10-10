@@ -72,6 +72,14 @@ async function handleNotification(taskId: string, data: NotificationData) {
   }
 }
 
+/**
+ * Processes a queue of tasks from the database with an optional limit on the number of tasks to process at one time.
+ *
+ * This function retrieves pending tasks from the database, processes each task by its type, and marks them as completed.
+ * If there are no pending tasks, it waits for a short period before checking again.
+ * @param [limit] - Optional limit on the number of tasks to take from the queue.
+ * @returns A promise that resolves when the queue processing is done.
+ */
 export const consumeQueue = async (limit?: number) => {
   try {
     const prisma = new PrismaClient()
