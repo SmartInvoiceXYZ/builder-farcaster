@@ -2,7 +2,7 @@ import { env } from '@/config'
 import { logger } from '@/logger'
 import { completeTask, retryTask } from '@/queue'
 import { sendDirectCast } from '@/services/warpcast/send-direct-cast'
-import { toRelativeTime } from '@/utils'
+import { isPast, toRelativeTime } from '@/utils'
 import { PrismaClient } from '@prisma/client'
 import sha256 from 'crypto-js/sha256'
 
@@ -39,13 +39,15 @@ async function handleNotification(taskId: string, data: NotificationData) {
     const proposalNumber = proposal.proposalNumber.toString()
     const proposalTitle = proposal.title
     const daoName = proposal.dao.name
-    const createdAt = toRelativeTime(Number(proposal.timeCreated))
-    const votingStartsAt = toRelativeTime(Number(proposal.voteStart))
-    const votingEndsAt = toRelativeTime(Number(proposal.voteEnd))
+    const createdAt = Number(proposal.timeCreated)
+    const votingStartsAt = Number(proposal.voteStart)
+    const votingEndsAt = Number(proposal.voteEnd)
 
     const message =
       `A new proposal (#${proposalNumber}: "${proposalTitle}") has been created on ${daoName} ` +
-      `around ${createdAt}. Voting starts ${votingStartsAt} and ends ${votingEndsAt}. ` +
+      `around ${toRelativeTime(createdAt)}. ` +
+      `Voting ${isPast(votingStartsAt) ? 'started' : 'starts'} ${toRelativeTime(votingStartsAt)} and ` +
+      `${isPast(votingEndsAt) ? 'ended' : 'ends'} ${toRelativeTime(votingEndsAt)}. ` +
       `Check it out for more details and participate in the voting process!`
     const idempotencyKey = sha256(message).toString()
 
