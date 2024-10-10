@@ -1,18 +1,16 @@
 import { PrismaClient } from '@prisma/client'
 import type { JsonValue } from 'type-fest'
+import { v4 as uuidv4 } from 'uuid'
 
 const prisma = new PrismaClient()
 
 /**
  * Adds a task to the queue for processing.
- * @param taskId - The unique identifier for the task.
  * @param data - The data associated with the task.
  * @returns Resolves when the task has been successfully added to the queue.
  */
-export async function addToQueue(
-  taskId: string,
-  data: JsonValue,
-): Promise<void> {
+export async function addToQueue(data: JsonValue): Promise<void> {
+  const taskId = uuidv4()
   const timestamp = new Date()
   const dataString = JSON.stringify(data)
 
@@ -59,4 +57,29 @@ export async function completeTask(taskId: string): Promise<void> {
     where: { taskId },
     data: { status: 'completed', completedAt: new Date() },
   })
+}
+
+/**
+ * Retries a task if it failed.
+ * @param taskId - The unique identifier for the task to retry.
+ * @returns Resolves when the task has been successfully updated for retry.
+ */
+export async function retryTask(taskId: string): Promise<void> {
+  const MAX_RETRIES = 3
+
+  const task = await prisma.queue.findUnique({
+    where: { taskId },
+  })
+
+  if (task && task.retries < MAX_RETRIES) {
+    await prisma.queue.update({
+      where: { taskId },
+      data: { retries: task.retries + 1, status: 'pending' },
+    })
+  } else {
+    await prisma.queue.update({
+      where: { taskId },
+      data: { status: 'failed' },
+    })
+  }
 }

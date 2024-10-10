@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
-import pkg from './package.json' // Import the package.json file
+import packageJson from './package.json' // Import the package.json file
 
 // Combine dependencies and devDependencies if needed
 const externalDeps = [
-  ...Object.keys(pkg.dependencies || {}),
-  ...Object.keys(pkg.devDependencies || {}),
+  ...Object.keys(packageJson.dependencies || {}),
+  ...Object.keys(packageJson.devDependencies || {}),
 ]
 
 export default defineConfig({

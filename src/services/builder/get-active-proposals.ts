@@ -35,7 +35,7 @@ export const getActiveProposals = async (
         skip: 0
         first: 100
         orderBy: timeCreated
-        orderDirection: desc
+        orderDirection: asc
         where: {
           timeCreated_gte: ${time}
           queued: false
