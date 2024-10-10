@@ -13,6 +13,9 @@ importers:
       commander:
         specifier: 12.1.0
         version: 12.1.0
+      crypto-js:
+        specifier: 4.2.0
+        version: 4.2.0
       dotenv:
         specifier: 16.4.5
         version: 16.4.5
@@ -50,6 +53,9 @@ importers:
       '@eslint/js':
         specifier: 9.12.0
         version: 9.12.0
+      '@types/crypto-js':
+        specifier: 4.2.2
+        version: 4.2.2
       '@types/eslint__js':
         specifier: 8.42.3
         version: 8.42.3
@@ -706,6 +712,12 @@ packages:
     resolution:
       {
         integrity: sha512-DV/Re3DPVY+BhBtLZ3dmP4mP6YMLSsgq9qGLXwOV38lvNF/fBlgvQswzlXmzCEefL/3q2eMoefZpOI/+GLuCNA==,
+      }
+
+  '@types/crypto-js@4.2.2':
+    resolution:
+      {
+        integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==,
       }
 
   '@types/debug@4.1.12':
@@ -1427,6 +1439,12 @@ packages:
     resolution:
       {
         integrity: sha512-fz4spIh+znjO2VjL+IdhEpRJ3YN6sMzITSBijk6FK2UvTqruSQW+/cCZTSNsMiZNvUeq0CqurF+dAbyiGOY6Wg==,
+      }
+
+  crypto-js@4.2.0:
+    resolution:
+      {
+        integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==,
       }
 
   dateformat@4.6.3:
@@ -4294,6 +4312,8 @@ snapshots:
     dependencies:
       '@taplo/core': 0.1.1
 
+  '@types/crypto-js@4.2.2': {}
+
   '@types/debug@4.1.12':
     dependencies:
       '@types/ms': 0.7.34
@@ -4785,6 +4805,8 @@ snapshots:
       public-encrypt: 4.0.3
       randombytes: 2.1.0
       randomfill: 1.0.4
+
+  crypto-js@4.2.0: {}
 
   dateformat@4.6.3: {}
 
