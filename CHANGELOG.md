@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.3] - 2024-10-10
+
+### 🚀 Features
+
+- *(prisma)* Add Queue model to database schema
+- *(queue)* Add task queue management functions
+- *(config)* Add `WARPCAST_API_KEY` to env schema
+- *(warpcast)* Add `sendDirectCast` service method
+- *(queue)* Generate unique task IDs in `addToQueue`
+- *(index)* Add proposals to notification queue
+- *(queue)* Add retries functionality to tasks
+- *(utils)* Add `toRelativeTime` function
+- *(vite)* Add node polyfills plugin
+- *(cli)* Add command-line interface for proposal handling
+- *(utils)* Enhance `toRelativeTime` function units
+- *(queue)* Add queue processing and notification handling
+- *(utils)* Add `isPast` function to check past timestamps
+- *(queues-handler)* Enhance proposal time messages
+
+### 🐛 Bug Fixes
+
+- *(builder)* Change proposal sorting order to asc
+
+### 🚜 Refactor
+
+- *(index)* Move proposal handling logic to `proposals-handlers`
+
+### 🎨 Styling
+
+- *(queues-handler)* Enhance proposal message format
+
+### ⚙️ Miscellaneous Tasks
+
+- *(gitignore)* Ignore `dev.db-journal` in `prisma`
+- *(scripts)* Update `start` script to process proposals
+- *(vite)* Remove unused node polyfills plugin
+- *(prettier)* Add prisma plugin to `.prettierrc.json`
+- *(scripts)* Update `test` script to allow no tests
+
 ## [1.0.0-alpha.2] - 2024-10-09
 
 ### 🚀 Features
