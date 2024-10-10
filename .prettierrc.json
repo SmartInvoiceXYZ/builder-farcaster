@@ -9,6 +9,7 @@
     "prettier-plugin-jsdoc",
     "prettier-plugin-organize-imports",
     "prettier-plugin-packagejson",
+    "prettier-plugin-prisma",
     "prettier-plugin-toml"
   ]
 }
