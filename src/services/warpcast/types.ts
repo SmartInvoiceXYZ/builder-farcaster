@@ -2,6 +2,7 @@ import { NonNegative } from 'type-fest'
 
 export interface Env {
   WARPCAST_ACCESS_TOKEN: string
+  WARPCAST_API_KEY: string
   WARPCAST_BASE_URL: string
 }
 
