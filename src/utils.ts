@@ -8,6 +8,6 @@ import { DateTime } from 'luxon'
 export function toRelativeTime(timestamp: number): string {
   return DateTime.fromSeconds(timestamp).toRelative({
     style: 'long',
-    unit: ['hours', 'minutes'],
+    unit: ['days', 'hours', 'minutes'],
   })
 }
