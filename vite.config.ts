@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import packageJson from './package.json' // Import the package.json file
 
@@ -13,14 +12,6 @@ export default defineConfig({
   plugins: [
     // Support for TypeScript path aliases
     tsconfigPaths(),
-    nodePolyfills({
-      // To add only specific polyfills, add them here. If no option is passed, adds all polyfills
-      include: ['crypto'],
-      // Whether to polyfill specific globals.
-      globals: {
-        process: false,
-      },
-    }),
   ],
   build: {
     target: 'es2022', // Align with ES target for clarity
