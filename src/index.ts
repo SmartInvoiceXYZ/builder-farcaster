@@ -1,21 +1,24 @@
-import { env } from '@/config'
 import { handleActiveProposals } from '@/handlers/proposals-handlers'
-import { logger } from '@/logger'
+import { Command } from 'commander'
+import packageJson from '../package.json'
 
-// Log environment information using structured logging
-logger.info(
-  {
-    baseUrl: env.WARPCAST_BASE_URL,
-    accessToken:
-      env.NODE_ENV !== 'production'
-        ? env.WARPCAST_ACCESS_TOKEN
-        : 'Access token is set',
-    mode: env.NODE_ENV,
-  },
-  'Environment information',
-)
+// Create a new command instance
+const program = new Command()
 
-// Handling some application logic with caching
-void (async () => {
-  await handleActiveProposals()
-})()
+// Set up metadata
+program
+  .name('builder-bot')
+  .description('A simple CLI tool to manage tasks')
+  .version(packageJson.version)
+
+// Register commands
+const processCommand = program
+  .command('process')
+  .description('Process related commands')
+processCommand
+  .command('proposals')
+  .description('Process proposals from API and enqueue tasks')
+  .action(handleActiveProposals)
+
+// Parse the command-line arguments
+program.parse(process.argv)
