@@ -11,3 +11,12 @@ export function toRelativeTime(timestamp: number): string {
     unit: ['days', 'hours', 'minutes'],
   })
 }
+
+/**
+ * Checks if a given timestamp is in the past.
+ * @param timestamp - The timestamp in seconds to be evaluated.
+ * @returns true if the timestamp is in the past, false otherwise.
+ */
+export function isPast(timestamp: number) {
+  return DateTime.fromSeconds(timestamp) < DateTime.now()
+}
