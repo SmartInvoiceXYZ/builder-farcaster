@@ -56,12 +56,20 @@ jobs:
             WARPCAST_ACCESS_TOKEN
             WARPCAST_API_KEY
             ALCHEMY_API_KEY
-            NEYNAR_API_KEY
+            DATABASE_URL
+            BUILDER_SUBGRAPH_ETHEREUM_URL
+            BUILDER_SUBGRAPH_BASE_URL
+            BUILDER_SUBGRAPH_OPTIMISM_URL
+            BUILDER_SUBGRAPH_ZORA_URL
         env:
           WARPCAST_ACCESS_TOKEN: ${{ secrets.WARPCAST_ACCESS_TOKEN }}
           WARPCAST_API_KEY: ${{ secrets.WARPCAST_API_KEY }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-          NEYNAR_API_KEY: ${{ secrets.NEYNAR_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BUILDER_SUBGRAPH_ETHEREUM_URL: ${{ secrets.BUILDER_SUBGRAPH_ETHEREUM_URL }}
+          BUILDER_SUBGRAPH_BASE_URL: ${{ secrets.BUILDER_SUBGRAPH_BASE_URL }}
+          BUILDER_SUBGRAPH_OPTIMISM_URL: ${{ secrets.BUILDER_SUBGRAPH_OPTIMISM_URL }}
+          BUILDER_SUBGRAPH_ZORA_URL: ${{ secrets.BUILDER_SUBGRAPH_ZORA_URL }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
