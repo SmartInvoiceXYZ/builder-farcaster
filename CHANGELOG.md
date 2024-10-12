@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.4] - 2024-10-12
+
+### 🐛 Bug Fixes
+
+- *(proposals-handlers)* Remove unnecessary cache age parameter
+
+### 🚜 Refactor
+
+- *(cache)* Make `maxAgeMs` optional in `getCache`
+- *(queues-handler)* Improve task processing flow
+
+### 📚 Documentation
+
+- *(handlers)* Add jsdoc for `consumeQueue` function
+- *(cli)* Enhance command descriptions
+
+### 🎨 Styling
+
+- *(types)* Update import statements to use `type`
+
+### ⚙️ Miscellaneous Tasks
+
+- *(env)* Add `.env.template` for environment variables
+- *(scripts)* Update `prebuild` and add `pretest` script
+- *(vite)* Remove cjs format in build config
+
 ## [1.0.0-alpha.3] - 2024-10-10
 
 ### 🚀 Features
