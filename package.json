@@ -1,7 +1,7 @@
 {
   "name": "builder-farcaster",
   "version": "1.0.0-alpha.5",
-  "description": "",
+  "description": "Tools and automation solutions for Builder DAO on Farcaster, enhancing community efficiency and engagement.",
   "type": "module",
   "scripts": {
     "prebuild": "prisma migrate deploy && prisma generate",
