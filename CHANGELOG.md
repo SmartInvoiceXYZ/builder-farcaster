@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.5] - 2024-10-12
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Update environment variables in `deploy.yml`
+- *(build)* Add `DATABASE_URL` to build pipeline
+
 ## [1.0.0-alpha.4] - 2024-10-12
 
 ### 🐛 Bug Fixes
