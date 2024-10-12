@@ -90,27 +90,27 @@ export const consumeQueue = async (limit?: number) => {
       take: limit,
     })
 
-    if (tasks.length > 0) {
-      for (const task of tasks) {
-        logger.info({ taskId: task.taskId }, 'Processing task')
+    if (tasks.length <= 0) {
+      logger.warn('No pending tasks available. Waiting...')
+      return
+    }
 
-        const taskData = JSON.parse(task.data) as TaskData
+    for (const task of tasks) {
+      logger.info({ taskId: task.taskId }, 'Processing task')
 
-        switch (taskData.type) {
-          case 'notification':
-            await handleNotification(task.taskId, taskData as NotificationData)
-            break
-          default:
-            logger.error({ task }, 'Unknown task type')
-            break
-        }
+      const taskData = JSON.parse(task.data) as TaskData
 
-        await completeTask(task.taskId)
-        logger.info({ taskId: task.taskId }, 'Task marked as completed')
+      switch (taskData.type) {
+        case 'notification':
+          await handleNotification(task.taskId, taskData as NotificationData)
+          break
+        default:
+          logger.error({ task }, 'Unknown task type')
+          break
       }
-    } else {
-      logger.info('No pending tasks available. Waiting...')
-      await new Promise((resolve) => setTimeout(resolve, 5000))
+
+      await completeTask(task.taskId)
+      logger.info({ taskId: task.taskId }, 'Task marked as completed')
     }
   } catch (error) {
     logger.error({ error }, 'Error while processing the queue')
