@@ -130,7 +130,7 @@ export async function handleActiveProposals() {
     const nowDateTime = DateTime.now()
     const timeCacheKey = 'proposals_time'
     let proposalsTime =
-      (await getCache<number | null>(timeCacheKey, CACHE_MAX_AGE_MS)) ??
+      (await getCache<number | null>(timeCacheKey)) ??
       nowDateTime.minus({ week: 1 }).toUnixInteger()
 
     const { proposals } = await getActiveProposals(env, proposalsTime)
