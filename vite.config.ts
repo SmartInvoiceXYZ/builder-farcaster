@@ -14,10 +14,10 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   build: {
-    target: 'es2022', // Align with ES target for clarity
+    target: 'es2022',
     lib: {
       entry: './src/index.ts',
-      formats: ['es', 'cjs'], // ES and CommonJS for compatibility
+      formats: ['es'],
       fileName: 'index',
     },
     rollupOptions: {

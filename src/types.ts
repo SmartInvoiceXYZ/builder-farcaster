@@ -1,5 +1,5 @@
-import { Env as BuilderEnv } from '@/services/builder/types'
-import { Env as WarpcastEnv } from '@/services/warpcast/types'
+import type { Env as BuilderEnv } from '@/services/builder/types'
+import type { Env as WarpcastEnv } from '@/services/warpcast/types'
 
 export type Env = BuilderEnv &
   WarpcastEnv & {
