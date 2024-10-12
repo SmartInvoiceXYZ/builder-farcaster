@@ -27,21 +27,24 @@ export async function setCache(key: string, value: unknown): Promise<void> {
  */
 export async function getCache<T>(
   key: string,
-  maxAgeMs: number,
+  maxAgeMs?: number,
 ): Promise<T | null> {
   const cacheEntry = await prisma.cache.findUnique({
     where: { key },
   })
 
-  if (cacheEntry) {
+  if (!cacheEntry) {
+    return null
+  }
+
+  if (maxAgeMs !== undefined) {
     const age = Date.now() - new Date(cacheEntry.timestamp).getTime()
-    if (age < maxAgeMs) {
-      return JSON.parse(cacheEntry.value) as T
-    } else {
+    if (age >= maxAgeMs) {
       // Cache is expired, you may optionally delete it here
       await prisma.cache.delete({ where: { key } })
+      return null
     }
   }
 
-  return null
+  return JSON.parse(cacheEntry.value) as T
 }
