@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.7] - 2024-10-14
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Reorder steps for environment setup
+
 ## [1.0.0-alpha.6] - 2024-10-14
 
 ### 📚 Documentation
