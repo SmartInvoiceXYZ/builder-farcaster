@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.12] - 2024-10-14
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Add logs directory and update log paths
+- *(deploy)* Update cron job frequency and command
+
 ## [1.0.0-alpha.11] - 2024-10-14
 
 ### ⚙️ Miscellaneous Tasks
