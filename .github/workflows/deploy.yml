@@ -111,6 +111,14 @@ jobs:
             ln -sv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }}
           EOF
 
+      - name: Set up crontab tasks
+        run: |
+          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
+            crontab -r
+            (echo "0 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js process proposals >> process_proposals.log 2>&1") | crontab -
+            (echo "*/5 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js queues consume -l 5 >> consume_queues.log 2>&1") | crontab -
+          EOF
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.run_id }}
   cancel-in-progress: true
