@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.10] - 2024-10-14
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Set up crontab tasks in deploy workflow
+
 ## [1.0.0-alpha.9] - 2024-10-14
 
 ### ⚙️ Miscellaneous Tasks
