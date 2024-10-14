@@ -100,6 +100,8 @@ jobs:
             cd ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
             ${{ env.REMOTE_HOST_NODE }} --version
             ${{ env.REMOTE_HOST_PNPM }} install --prod
+            ${{ env.REMOTE_HOST_PNPM }} prisma migrate deploy
+            ${{ env.REMOTE_HOST_PNPM }} prisma generate
           EOF
 
       - name: Replace with current
