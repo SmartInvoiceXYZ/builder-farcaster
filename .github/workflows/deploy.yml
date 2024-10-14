@@ -88,6 +88,7 @@ jobs:
             --include='.env' \
             --include='package.json' \
             --include='pnpm-lock.yaml' \
+            --include='LICENSE' \
             --exclude='*' \
             ./ \
             ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }}:${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
