@@ -55,6 +55,7 @@ jobs:
       - name: Create env file from secrets
         run: |
           cat <<EOF > .env
+          NODE_ENV=${{ secrets.NODE_ENV }}
           DATABASE_URL=${{ secrets.DATABASE_URL }}
           BUILDER_SUBGRAPH_ETHEREUM_URL=${{ secrets.BUILDER_SUBGRAPH_ETHEREUM_URL }}
           BUILDER_SUBGRAPH_BASE_URL=${{ secrets.BUILDER_SUBGRAPH_BASE_URL }}
