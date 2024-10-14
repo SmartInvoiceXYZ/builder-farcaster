@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.11] - 2024-10-14
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Update cron job setup in `deploy.yml`
+
 ## [1.0.0-alpha.10] - 2024-10-14
 
 ### ⚙️ Miscellaneous Tasks
