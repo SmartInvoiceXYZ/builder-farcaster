@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.9] - 2024-10-14
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Add `NODE_ENV` to environment file creation
+- *(deploy)* Add prisma migration and generation steps
+
 ## [1.0.0-alpha.8] - 2024-10-14
 
 ### ⚙️ Miscellaneous Tasks

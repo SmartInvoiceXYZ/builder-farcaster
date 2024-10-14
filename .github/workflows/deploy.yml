@@ -55,6 +55,7 @@ jobs:
       - name: Create env file from secrets
         run: |
           cat <<EOF > .env
+          NODE_ENV=${{ secrets.NODE_ENV }}
           DATABASE_URL=${{ secrets.DATABASE_URL }}
           BUILDER_SUBGRAPH_ETHEREUM_URL=${{ secrets.BUILDER_SUBGRAPH_ETHEREUM_URL }}
           BUILDER_SUBGRAPH_BASE_URL=${{ secrets.BUILDER_SUBGRAPH_BASE_URL }}
@@ -99,6 +100,8 @@ jobs:
             cd ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
             ${{ env.REMOTE_HOST_NODE }} --version
             ${{ env.REMOTE_HOST_PNPM }} install --prod
+            ${{ env.REMOTE_HOST_PNPM }} prisma migrate deploy
+            ${{ env.REMOTE_HOST_PNPM }} prisma generate
           EOF
 
       - name: Replace with current
