@@ -115,8 +115,10 @@ jobs:
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             crontab -r
-            (echo "0 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js process proposals >> process_proposals.log 2>&1") | crontab -
-            (echo "*/5 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js queues consume -l 5 >> consume_queues.log 2>&1") | crontab -
+            echo "0 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js process proposals >> process_proposals.log 2>&1" >> cron_jobs.txt
+            echo "*/5 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js queues consume -l 5 >> consume_queues.log 2>&1" >> cron_jobs.txt
+            crontab cron_jobs.txt
+            rm -f cron_jobs.txt
           EOF
 
 concurrency:
