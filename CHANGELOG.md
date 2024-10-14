@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.8] - 2024-10-14
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Include LICENSE file in deployment
+- *(scripts)* Update `prepare` script to handle errors
+
 ## [1.0.0-alpha.7] - 2024-10-14
 
 ### ⚙️ Miscellaneous Tasks
