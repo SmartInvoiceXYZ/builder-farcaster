@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.6] - 2024-10-14
+
+### 📚 Documentation
+
+- *(package)* Update `description` with project details
+
+### ⚙️ Miscellaneous Tasks
+
+- *(workflows)* Remove usage guard job in `build.yml`
+- *(workflows)* Enhance deploy pipeline with SSH and build steps
+
 ## [1.0.0-alpha.5] - 2024-10-12
 
 ### ⚙️ Miscellaneous Tasks
