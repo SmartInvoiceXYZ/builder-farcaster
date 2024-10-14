@@ -1,4 +1,14 @@
 name: Deploy & Publish
+
+env:
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  REMOTE_HOST_NAME: ${{ secrets.REMOTE_HOST_NAME }}
+  REMOTE_HOST_USER: ${{ secrets.REMOTE_HOST_USER }}
+  REMOTE_HOST_PATH: ${{ secrets.REMOTE_HOST_PATH }}
+  REMOTE_HOST_NODE: ${{ secrets.REMOTE_HOST_NODE }}
+  REMOTE_HOST_PNPM: ${{ secrets.REMOTE_HOST_PNPM }}
+  CURRENT_REFERENCE: ${{ github.ref_name }}
+
 on:
   release:
     types: [published]
@@ -8,7 +18,6 @@ jobs:
   deploy:
     name: Deploy to Workers
     runs-on: ubuntu-latest
-    # environment: ${{ github.event.release.prerelease && 'development' || 'production' }}
     permissions:
       contents: write
       pull-requests: write
@@ -20,13 +29,12 @@ jobs:
           ref: ${{ github.event.release.tag_name }}
 
       - name: Setup Node.js Environment
-        uses: actions/setup-node@v4.0.4 # Action for setting up Node environment.
+        uses: actions/setup-node@v4.0.4
         with:
-          node-version: latest
+          node-version: ^20
 
       - name: Install PNPM package manager
-        uses: pnpm/action-setup@v4.0.0 # Action for setting up pnpm.
-        id: pnpm-install
+        uses: pnpm/action-setup@v4.0.0
         with:
           version: ^9
           run_install: false
@@ -37,40 +45,68 @@ jobs:
           echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Cache pnpm Store
-        uses: actions/cache@v4.1.1 # Action provides caching dependencies and build outputs to improve workflow execution time.
+        uses: actions/cache@v4.1.1
         with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }} # The path of the directory to cache.
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }} # An explicit key for restoring and saving the cache.
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Deploy to Workers
-        uses: cloudflare/wrangler-action@v3.9.0
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build the application
+        run: pnpm run build
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.4.1
         with:
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          # environment: ${{ github.event.release.prerelease && 'dev' || '' }}
-          preCommands: pnpm run build
-          command: deploy
-          secrets: |
-            WARPCAST_ACCESS_TOKEN
-            WARPCAST_API_KEY
-            ALCHEMY_API_KEY
-            DATABASE_URL
-            BUILDER_SUBGRAPH_ETHEREUM_URL
-            BUILDER_SUBGRAPH_BASE_URL
-            BUILDER_SUBGRAPH_OPTIMISM_URL
-            BUILDER_SUBGRAPH_ZORA_URL
-        env:
-          WARPCAST_ACCESS_TOKEN: ${{ secrets.WARPCAST_ACCESS_TOKEN }}
-          WARPCAST_API_KEY: ${{ secrets.WARPCAST_API_KEY }}
-          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          BUILDER_SUBGRAPH_ETHEREUM_URL: ${{ secrets.BUILDER_SUBGRAPH_ETHEREUM_URL }}
-          BUILDER_SUBGRAPH_BASE_URL: ${{ secrets.BUILDER_SUBGRAPH_BASE_URL }}
-          BUILDER_SUBGRAPH_OPTIMISM_URL: ${{ secrets.BUILDER_SUBGRAPH_OPTIMISM_URL }}
-          BUILDER_SUBGRAPH_ZORA_URL: ${{ secrets.BUILDER_SUBGRAPH_ZORA_URL }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Create env file from secrets
+        run: |
+          cat <<EOF > .env
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          BUILDER_SUBGRAPH_ETHEREUM_URL=${{ secrets.BUILDER_SUBGRAPH_ETHEREUM_URL }}
+          BUILDER_SUBGRAPH_BASE_URL=${{ secrets.BUILDER_SUBGRAPH_BASE_URL }}
+          BUILDER_SUBGRAPH_OPTIMISM_URL=${{ secrets.BUILDER_SUBGRAPH_OPTIMISM_URL }}
+          BUILDER_SUBGRAPH_ZORA_URL=${{ secrets.BUILDER_SUBGRAPH_ZORA_URL }}
+          WARPCAST_BASE_URL=${{ secrets.WARPCAST_BASE_URL }}
+          WARPCAST_API_KEY=${{ secrets.WARPCAST_API_KEY }}
+          WARPCAST_ACCESS_TOKEN=${{ secrets.WARPCAST_ACCESS_TOKEN }}
+          EOF
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
+            mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
+          EOF
+
+          rsync -avz --delete \
+            --include='dist/***' \
+            --include='prisma/***' \
+            --include='.env' \
+            --include='package.json' \
+            --include='pnpm-lock.yaml' \
+            --exclude='*' \
+            ./ \
+            ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }}:${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
+
+      - name: Install Dependencies on Server
+        run: |
+          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} << EOF
+            cd ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
+            ${{ env.REMOTE_HOST_NODE }} --version
+            ${{ env.REMOTE_HOST_PNPM }} install --prod
+          EOF
+
+      - name: Replace with current
+        run: |
+          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
+            rm -fv ${{ env.REMOTE_HOST_PATH }}
+            ln -sv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }}
+          EOF
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.run_id }}
   cancel-in-progress: true
