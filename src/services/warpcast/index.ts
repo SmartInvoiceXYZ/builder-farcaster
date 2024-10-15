@@ -51,7 +51,7 @@ export async function fetchRequest<T>(
         : undefined,
   })
 
-  const data: FetchResponse = await response.json()
+  const data: FetchResponse = (await response.json()) as FetchResponse
   if (data.errors && data.errors.length > 0) {
     throw new Error(first(data.errors)?.message)
   }
