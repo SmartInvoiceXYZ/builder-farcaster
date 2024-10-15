@@ -1,6 +1,6 @@
 {
   "name": "builder-farcaster",
-  "version": "1.0.0-alpha.18",
+  "version": "1.0.0-alpha.19",
   "description": "Tools and automation solutions for Builder DAO on Farcaster, enhancing community efficiency and engagement.",
   "type": "module",
   "scripts": {
@@ -11,7 +11,7 @@
     "dev:consume": "node dist/index.js queues consume -l 10",
     "dev:process": "node dist/index.js process proposals",
     "lint": "eslint",
-    "prepare": "husky",
+    "prepare": "husky || :",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "pretest": "pnpm build",
