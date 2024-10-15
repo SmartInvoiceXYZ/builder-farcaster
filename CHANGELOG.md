@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.16] - 2024-10-15
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Update rsync include patterns for prisma
+- *(deploy)* Add tty allocation to ssh commands
+
 ## [1.0.0-alpha.15] - 2024-10-15
 
 ### ⚙️ Miscellaneous Tasks
