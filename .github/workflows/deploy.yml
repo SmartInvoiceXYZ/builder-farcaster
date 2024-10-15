@@ -40,17 +40,15 @@ jobs:
           run_install: false
 
       - name: Capture pnpm store directory
+      # Cache the PNPM store to speed up dependency installation
+      - name: Cache PNPM Store
         id: pnpm-cache
-        run: |
-          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Cache pnpm Store
         uses: actions/cache@v4.1.1
         with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: $(pnpm store path) # Cache the PNPM store directory
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }} # Unique cache key based on OS and lock file
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            ${{ runner.os }}-pnpm-store- # Restore cache if an exact match is not found
 
       - name: Create env file from secrets
         run: |
