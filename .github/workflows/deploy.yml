@@ -87,14 +87,13 @@ jobs:
             mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
           EOF
 
+          # Remove SQLite database files
+          rm -f prisma/*.db prisma/*.db-journal
+
           # Synchronize files to the remote server using rsync
           rsync -avz --delete \
             --include='dist/***' \
             --include='prisma/***' \
-            --exclude='prisma/*.db' \
-            --exclude='prisma/*.db-journal' \
-            --include='prisma/schema.prisma' \
-            --include='prisma/migrations/***' \
             --include='.env' \
             --include='package.json' \
             --include='pnpm-lock.yaml' \
