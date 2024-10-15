@@ -92,6 +92,9 @@ jobs:
             --include='dist/***' \
             --include='prisma/***' \
             --exclude='prisma/*.db' \
+            --exclude='prisma/*.db-journal' \
+            --include='prisma/schema.prisma' \
+            --include='prisma/migrations/***' \
             --include='.env' \
             --include='package.json' \
             --include='pnpm-lock.yaml' \
