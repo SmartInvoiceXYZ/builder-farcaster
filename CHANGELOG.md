@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.21] - 2024-10-15
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Remove excluded SQLite files before rsync
+
 ## [1.0.0-alpha.20] - 2024-10-15
 
 ### ⚙️ Miscellaneous Tasks
