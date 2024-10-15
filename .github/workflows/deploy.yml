@@ -14,7 +14,6 @@ on:
     types: [published]
 
 jobs:
-  # Prepare and publish
   deploy:
     name: Deploy to Workers
     runs-on: ubuntu-latest
@@ -26,20 +25,20 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v4.2.1
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name }} # Checkout the specific release tag
 
-      - name: Setup Node.js Environment
+      # Set up Node.js and PNPM environment
+      - name: Setup Node.js
         uses: actions/setup-node@v4.0.4
         with:
-          node-version: ^20
+          node-version: ^20 # Use Node.js version 20 or above to ensure compatibility with the project
 
-      - name: Install PNPM package manager
+      - name: Setup PNPM
         uses: pnpm/action-setup@v4.0.0
         with:
-          version: ^9
-          run_install: false
+          version: ^9 # Use PNPM version 9 or above
+          run_install: false # Disable automatic installation to customize the installation process
 
-      - name: Capture pnpm store directory
       # Cache the PNPM store to speed up dependency installation
       - name: Cache PNPM Store
         id: pnpm-cache
@@ -50,7 +49,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store- # Restore cache if an exact match is not found
 
-      - name: Create env file from secrets
+      # Create .env file from GitHub secrets to use in the project
+      - name: Create .env File
         run: |
           cat <<EOF > .env
           NODE_ENV=${{ secrets.NODE_ENV }}
@@ -62,26 +62,32 @@ jobs:
           WARPCAST_BASE_URL=${{ secrets.WARPCAST_BASE_URL }}
           WARPCAST_API_KEY=${{ secrets.WARPCAST_API_KEY }}
           WARPCAST_ACCESS_TOKEN=${{ secrets.WARPCAST_ACCESS_TOKEN }}
-          EOF
+          EOF # Generate the .env file with necessary environment variables
 
-      - name: Install dependencies
-        run: pnpm install
+      # Install dependencies using PNPM
+      - name: Install Dependencies
+        run: pnpm install # Install project dependencies
 
-      - name: Build the application
-        run: pnpm run build
+      # Build the application
+      - name: Build Application
+        run: pnpm build # Compile the application for deployment
 
-      - name: Set up SSH
+      # Set up SSH agent for secure connection to the server
+      - name: Set Up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} # Use the SSH private key from GitHub secrets for authentication
 
+      # Deploy the application to the remote server
       - name: Deploy to Server
         run: |
+          # Create a new directory for the current release on the server
           ssh -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
             mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
           EOF
 
+          # Synchronize files to the remote server using rsync
           rsync -avz --delete \
             --include='dist/***' \ # Include distribution files
             --include='prisma/***' \ # Include Prisma files
@@ -94,33 +100,38 @@ jobs:
             ./ \
             ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }}:${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
 
-      - name: Install Dependencies on Server
+      # Install dependencies on the server and run Prisma migrations
+      - name: Install Server Dependencies
         run: |
-          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} << EOF
+          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             cd ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
-            ${{ env.REMOTE_HOST_NODE }} --version
-            ${{ env.REMOTE_HOST_PNPM }} install --prod
-            ${{ env.REMOTE_HOST_PNPM }} prisma migrate deploy
-            ${{ env.REMOTE_HOST_PNPM }} prisma generate
+            ${{ env.REMOTE_HOST_NODE }} --version # Verify Node.js version on the server
+            ${{ env.REMOTE_HOST_PNPM }} install --prod # Install production dependencies only
+            ${{ env.REMOTE_HOST_PNPM }} prisma migrate deploy # Run database migrations
+            ${{ env.REMOTE_HOST_PNPM }} prisma generate # Generate Prisma client
           EOF
 
-      - name: Replace with current
+      # Update the current release symlink to point to the new release
+      - name: Update Current Release
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            rm -fv ${{ env.REMOTE_HOST_PATH }}
-            ln -sv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }}
+            rm -fv ${{ env.REMOTE_HOST_PATH }} # Remove the existing symlink
+            ln -sv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }} # Create a new symlink to the current release
           EOF
 
-      - name: Set up crontab tasks
+      # Set up crontab tasks for background processes
+      - name: Set Up Crontab Tasks
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            crontab -r
+            crontab -r # Remove existing crontab tasks
+            # Add a crontab task to process proposals every hour
             echo "0 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js process proposals >> logs/process_proposals.log 2>&1" >> cron_jobs.txt
+            # Add a crontab task to consume queues every minute
             echo "* * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js queues consume -l 10 >> logs/consume_queues.log 2>&1" >> cron_jobs.txt
-            crontab cron_jobs.txt
-            rm -f cron_jobs.txt
+            crontab cron_jobs.txt # Update crontab with new tasks
+            rm -f cron_jobs.txt # Remove temporary crontab file
           EOF
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.run_id }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.run_id }} # Ensure only one deployment is running per workflow
+  cancel-in-progress: true # Cancel any ongoing workflow if a new one starts
