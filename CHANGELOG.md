@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.17] - 2024-10-15
+
+### ◀️ Revert
+
+- *(deploy)* Update rsync include patterns for prisma
+
 ## [1.0.0-alpha.16] - 2024-10-15
 
 ### ⚙️ Miscellaneous Tasks

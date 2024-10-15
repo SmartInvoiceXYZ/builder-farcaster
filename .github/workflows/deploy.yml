@@ -90,8 +90,8 @@ jobs:
           # Synchronize files to the remote server using rsync
           rsync -avz --delete \
             --include='dist/***' \
-            --include='prisma/schema.prisma' \
-            --include='prisma/migrations/***' \
+            --include='prisma/***' \
+            --exclude='prisma/*.db*' \
             --include='.env' \
             --include='package.json' \
             --include='pnpm-lock.yaml' \
