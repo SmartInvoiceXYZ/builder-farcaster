@@ -82,7 +82,7 @@ jobs:
       - name: Deploy to Server
         run: |
           # Create a new directory for the current release on the server
-          ssh -tt -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
+          ssh -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
             mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
           EOF
@@ -103,7 +103,7 @@ jobs:
       # Install dependencies on the server and run Prisma migrations
       - name: Install Server Dependencies
         run: |
-          ssh -tt ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
+          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             cd ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
             ${{ env.REMOTE_HOST_NODE }} --version # Verify Node.js version on the server
             ${{ env.REMOTE_HOST_PNPM }} install --prod # Install production dependencies only
@@ -114,7 +114,7 @@ jobs:
       # Update the current release symlink to point to the new release
       - name: Update Current Release
         run: |
-          ssh -tt ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
+          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             rm -fv ${{ env.REMOTE_HOST_PATH }} # Remove the existing symlink
             ln -sv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }} # Create a new symlink to the current release
           EOF
@@ -122,7 +122,7 @@ jobs:
       # Set up crontab tasks for background processes
       - name: Set Up Crontab Tasks
         run: |
-          ssh -tt ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
+          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             crontab -r # Remove existing crontab tasks
             # Add a crontab task to process proposals every hour
             echo "0 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js process proposals >> logs/process_proposals.log 2>&1" >> cron_jobs.txt
