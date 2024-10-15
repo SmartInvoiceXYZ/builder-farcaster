@@ -89,14 +89,14 @@ jobs:
 
           # Synchronize files to the remote server using rsync
           rsync -avz --delete \
-            --include='dist/***' \ # Include distribution files
-            --include='prisma/***' \ # Include Prisma files
-            --exclude='prisma/*.db*' \ # Exclude SQLite database files
-            --include='.env' \ # Include environment file
-            --include='package.json' \ # Include package.json for dependencies
-            --include='pnpm-lock.yaml' \ # Include pnpm lock file
-            --include='LICENSE' \ # Include LICENSE file
-            --exclude='*' \ # Exclude all other files
+            --include='dist/***' \
+            --include='prisma/***' \
+            --exclude='prisma/*.db*' \
+            --include='.env' \
+            --include='package.json' \
+            --include='pnpm-lock.yaml' \
+            --include='LICENSE' \
+            --exclude='*' \
             ./ \
             ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }}:${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
 
