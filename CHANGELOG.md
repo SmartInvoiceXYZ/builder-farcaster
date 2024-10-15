@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.15] - 2024-10-15
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Remove rsync inline comments
+
 ## [1.0.0-alpha.14] - 2024-10-15
 
 ### 🐛 Bug Fixes
