@@ -11,7 +11,7 @@
     "dev:consume": "node dist/index.js queues consume -l 10",
     "dev:process": "node dist/index.js process proposals",
     "lint": "eslint",
-    "prepare": "husky",
+    "prepare": "husky || :",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "pretest": "pnpm build",
