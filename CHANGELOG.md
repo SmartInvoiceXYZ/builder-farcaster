@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.14] - 2024-10-15
+
+### 🐛 Bug Fixes
+
+- *(warpcast)* Type-cast response json to `FetchResponse`
+
+### ⚙️ Miscellaneous Tasks
+
+- *(scripts)* Update dev and build scripts
+- *(scripts)* Update and streamline build scripts
+- *(deploy)* Update rsync to exclude SQLite files
+- *(workflows)* Optimize PNPM store caching
+- *(workflows)* Streamline deploy script comments
+
 ## [1.0.0-alpha.13] - 2024-10-15
 
 ### 🐛 Bug Fixes
