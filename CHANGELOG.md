@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.19] - 2024-10-15
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Update rsync rules for prisma files
+- *(scripts)* Update `prepare` script to handle errors
+
 ## [1.0.0-alpha.18] - 2024-10-15
 
 ### ⚙️ Miscellaneous Tasks
