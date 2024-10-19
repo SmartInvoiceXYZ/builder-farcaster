@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.22] - 2024-10-19
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Add step to copy prisma db files during deployment
+
 ## [1.0.0-alpha.21] - 2024-10-15
 
 ### ⚙️ Miscellaneous Tasks
