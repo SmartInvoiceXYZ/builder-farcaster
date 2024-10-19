@@ -117,6 +117,7 @@ jobs:
       - name: Update Current Release
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
+            cp -av ${{ env.REMOTE_HOST_PATH }}/prisma/{*.db,*.db-journal} ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/prisma/
             rm -fv ${{ env.REMOTE_HOST_PATH }} # Remove the existing symlink
             ln -sv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }} # Create a new symlink to the current release
           EOF
