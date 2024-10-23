@@ -39,8 +39,8 @@ importers:
         specifier: 5.21.1
         version: 5.21.1
       remeda:
-        specifier: 2.15.2
-        version: 2.15.2
+        specifier: 2.16.0
+        version: 2.16.0
       type-fest:
         specifier: 4.26.1
         version: 4.26.1
@@ -1989,8 +1989,8 @@ packages:
   remeda@1.61.0:
     resolution: {integrity: sha512-caKfSz9rDeSKBQQnlJnVW3mbVdFgxgGWQKq1XlFokqjf+hQD5gxutLGTTY2A/x24UxVyJe9gH5fAkFI63ULw4A==}
 
-  remeda@2.15.2:
-    resolution: {integrity: sha512-xcvVY/Xo5D5/s8SjLqEHcYOhmWtzmyyKW4BEaUZ6NVbIHsO03lyxnM5lfy1Mtytehkb9Zo+RJtIsRgkNOEDmEw==}
+  remeda@2.16.0:
+    resolution: {integrity: sha512-HOymkGg58HW4LT8MBEabQEdW76YsqcRNNFPXPrOrnYm+/9Pmk0b9fm8PKgQxoRPa6WDLnRM/LxTXkHdXf9Ab0w==}
 
   resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
@@ -4426,7 +4426,7 @@ snapshots:
 
   remeda@1.61.0: {}
 
-  remeda@2.15.2:
+  remeda@2.16.0:
     dependencies:
       type-fest: 4.26.1
 
