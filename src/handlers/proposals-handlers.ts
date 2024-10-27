@@ -3,6 +3,7 @@ import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { logger } from '@/logger'
 import { addToQueue } from '@/queue'
+import { getActiveEndingProposals } from '@/services/builder/get-active-ending-proposals'
 import { getActiveVotingProposals } from '@/services/builder/get-active-voting-proposals'
 import { getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
 import { getFollowers } from '@/services/warpcast/get-followers'
@@ -117,17 +118,19 @@ async function getUserFid() {
 }
 
 /**
- * Handles the process of fetching active voting proposals and notifying followers about them.
- * The function performs the following steps:
- * 1. Fetches the current time and retrieves the last cached proposals time.
- * 2. Fetches active voting proposals from the environment based on the cached time.
- * 3. Logs active proposals or indicates if no proposals are found.
- * 4. Retrieves followers and their associated Ethereum addresses.
- * 5. Retrieves DAOs associated with followers.
- * 6. Queues notifications for followers concerning relevant proposals.
- * 7. Updates the proposals time cache.
- * If an error occurs during the process, it is logged accordingly.
- * @returns A promise that resolves once all operations are completed.
+ * Handles the notifications related to active voting proposals.
+ *
+ * This method does the following:
+ * - Fetches the current date and time.
+ * - Retrieves the cached time for proposal votes or sets a default time.
+ * - Fetches active voting proposals based on the proposals time.
+ * - Logs the fetched active proposals.
+ * - Retrieves followers and their associated Ethereum addresses.
+ * - Retrieves DAOs associated with followers and their addresses.
+ * - Adds proposals to the notification queue for followers interested in the specific DAOs.
+ * - Updates the cache with the latest proposal vote time.
+ * - Handles and logs errors that occur during the process.
+ * @returns A promise that resolves when the notification handling is complete.
  */
 async function handleVotingProposalsNotifications() {
   try {
@@ -202,15 +205,102 @@ async function handleVotingProposalsNotifications() {
 }
 
 /**
- * Handles the active proposals by fetching, processing, and updating necessary information.
- * The method performs the following steps:
- * 1. Fetches the current date and time.
- * 2. Retrieves the last proposals fetch time from the cache.
- * 3. Fetches the active proposals from an external source.
- * 4. Processes each follower to intersect their DAOs with active proposals.
- * 5. Updates the proposals fetch time in the cache.
- * @returns A promise that resolves when the process is complete.
+ * Handles notifications for ending proposals.
+ *
+ * This method fetches proposals that are nearing their end and notifies followers
+ * who are associated with the DAOs of these proposals. It fetches the proposals ending
+ * within one day, retrieves the followers and their associated Ethereum addresses,
+ * and then sends notifications to those followers for proposals that match their DAOs.
+ *
+ * Caches the most recent time when proposals were retrieved and updates this cache upon
+ * successful processing.
+ * @returns A promise that resolves when the method has completed execution.
+ */
+async function handleEndingProposalsNotifications() {
+  try {
+    const nowDateTime = DateTime.now()
+    const timeCacheKey = 'proposals_end_time'
+    let proposalsTime =
+      (await getCache<number | null>(timeCacheKey)) ??
+      nowDateTime.minus({ day: 1 }).toUnixInteger()
+
+    const { proposals } = await getActiveEndingProposals(env, proposalsTime)
+    logger.info(
+      { proposalsTime, proposals },
+      'Ending proposals fetched successfully',
+    )
+
+    if (proposals.length === 0) {
+      logger.warn(
+        'No proposals ending in one day found, terminating execution.',
+      )
+      return
+    }
+
+    const followers = await getFollowerFids(await getUserFid())
+    for (const follower of followers) {
+      // Retrieve the ethereum addresses associated with the current follower
+      let addresses = await getFollowerAddresses(follower)
+      addresses = pipe(
+        addresses,
+        filter((address) => /^0x[a-fA-F0-9]{40}$/.test(address)),
+      )
+
+      // If no addresses are found, skip to the next follower
+      if (addresses.length === 0) {
+        continue
+      }
+
+      // Retrieve the DAOs associated with the current follower and their addresses
+      const daos = await getFollowerDAOs(follower, addresses)
+
+      // If no DAOs are found, skip to the next follower
+      if (!daos || daos.length <= 0) {
+        continue
+      }
+
+      // Loop through each proposal in the proposals array
+      for (const proposal of proposals) {
+        // If the proposal's DAO ID is not in the list of DAOs for the current follower, skip to the next proposal
+        if (!daos.includes(proposal.dao.id)) {
+          continue
+        }
+
+        // Add the proposal to the queue for notifications
+        await addToQueue({
+          type: 'notification',
+          recipient: follower,
+          proposal: proposal as unknown as JsonValue,
+        })
+      }
+    }
+
+    proposalsTime = nowDateTime.toUnixInteger()
+    await setCache(timeCacheKey, proposalsTime)
+    logger.info({ proposalsTime }, 'Proposals end time cached successfully')
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(
+        { message: error.message, stack: error.stack },
+        'Error executing async function',
+      )
+    } else {
+      logger.error({ error }, 'Unknown error occurred')
+    }
+  }
+}
+
+/**
+ * Handles notifications for both voting and ending proposals concurrently.
+ *
+ * This function triggers notifications for proposals that are currently active.
+ * It ensures that notifications for voting proposals and ending proposals are
+ * processed at the same time using `Promise.all`.
+ * @returns A promise that resolves when all notifications have been handled.
  */
 export async function handleActiveProposals() {
-  await handleVotingProposalsNotifications()
+  await Promise.all([
+    handleVotingProposalsNotifications(),
+    handleEndingProposalsNotifications(),
+  ])
 }
