@@ -20,10 +20,10 @@ export const getActiveProposals = async (
       proposals(
         skip: 0
         first: 100
-        orderBy: timeCreated
+        orderBy: voteStart
         orderDirection: asc
         where: {
-          timeCreated_gte: ${time}
+          voteStart_gte: ${time}
           queued: false
           executed: false
           canceled: false
