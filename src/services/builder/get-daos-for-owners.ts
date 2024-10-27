@@ -8,7 +8,7 @@ interface Dao {
   name: string
 }
 
-interface DaoTokenOwner {
+interface Owner {
   id: string
   owner: string
   dao: Dao
@@ -16,7 +16,7 @@ interface DaoTokenOwner {
 }
 
 type Data = {
-  daotokenOwners: DaoTokenOwner[]
+  owners: Owner[]
 } & JsonObject
 
 interface Result {
@@ -29,7 +29,7 @@ export const getDAOsForOwners = async (
 ): Promise<Result> => {
   const query = gql`
     {
-      daotokenOwners(
+      owners: daotokenOwners(
         skip: 0
         first: 1000
         where: { owner_in: ${JSON.stringify(ownerAddresses)} }
@@ -56,7 +56,7 @@ export const getDAOsForOwners = async (
     const daoPromises = endpoints.map(async (endpoint) => {
       const client = new GraphQLClient(endpoint)
       const response = await client.request<Data>(query)
-      return response.daotokenOwners.map((owner) => owner.dao)
+      return response.owners.map((owner) => owner.dao)
     })
 
     const results = await Promise.all(daoPromises)
