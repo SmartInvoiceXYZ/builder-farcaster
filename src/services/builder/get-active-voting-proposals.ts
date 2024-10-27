@@ -23,7 +23,7 @@ export const getActiveVotingProposals = async (
         orderBy: voteStart
         orderDirection: asc
         where: {
-          voteStart_gte: ${time}
+          voteStart_gt: ${time}
           queued: false
           executed: false
           canceled: false
