@@ -132,7 +132,7 @@ export async function handleActiveProposals() {
     const timeCacheKey = 'proposals_vote_time'
     let proposalsTime =
       (await getCache<number | null>(timeCacheKey)) ??
-      nowDateTime.minus({ week: 1 }).toUnixInteger()
+      nowDateTime.minus({ days: 3 }).toUnixInteger()
 
     const { proposals } = await getActiveProposals(env, proposalsTime)
     logger.info(
