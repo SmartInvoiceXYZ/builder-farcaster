@@ -10,7 +10,7 @@ import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
 import { DateTime } from 'luxon'
-import { filter, pipe } from 'remeda'
+import { filter, last, pipe } from 'remeda'
 import { JsonValue } from 'type-fest'
 
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
@@ -147,7 +147,7 @@ async function handleVotingProposalsNotifications() {
     )
 
     if (proposals.length === 0) {
-      logger.warn('No active proposals found, terminating execution.')
+      logger.warn('No active voting proposals found, terminating execution.')
       return
     }
 
@@ -189,7 +189,10 @@ async function handleVotingProposalsNotifications() {
       }
     }
 
-    proposalsTime = nowDateTime.toUnixInteger()
+    const proposalVoteStart = last(proposals)?.voteStart
+    proposalsTime = proposalVoteStart
+      ? Number(proposalVoteStart)
+      : nowDateTime.toUnixInteger()
     await setCache(timeCacheKey, proposalsTime)
     logger.info({ proposalsTime }, 'Proposals vote time cached successfully')
   } catch (error) {
@@ -231,9 +234,7 @@ async function handleEndingProposalsNotifications() {
     )
 
     if (proposals.length === 0) {
-      logger.warn(
-        'No proposals ending in one day found, terminating execution.',
-      )
+      logger.warn('No active ending proposals found, terminating execution.')
       return
     }
 
