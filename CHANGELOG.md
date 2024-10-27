@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.24] - 2024-10-27
+
+### 🎨 Styling
+
+- *(graphql)* Rename `builder.gql` to `builder.graphql`
+
+### ⚙️ Miscellaneous Tasks
+
+- *(gitignore)* Add graphql configuration to .gitignore
+
 ## [1.0.0-alpha.23] - 2024-10-19
 
 ### ⚙️ Miscellaneous Tasks
