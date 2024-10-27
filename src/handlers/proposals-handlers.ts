@@ -3,7 +3,7 @@ import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { logger } from '@/logger'
 import { addToQueue } from '@/queue'
-import { getActiveProposals } from '@/services/builder/get-active-proposals'
+import { getActiveVotingProposals } from '@/services/builder/get-active-voting-proposals'
 import { getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
 import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
@@ -134,7 +134,7 @@ export async function handleActiveProposals() {
       (await getCache<number | null>(timeCacheKey)) ??
       nowDateTime.minus({ days: 3 }).toUnixInteger()
 
-    const { proposals } = await getActiveProposals(env, proposalsTime)
+    const { proposals } = await getActiveVotingProposals(env, proposalsTime)
     logger.info(
       { proposalsTime, proposals },
       'Active proposals fetched successfully',

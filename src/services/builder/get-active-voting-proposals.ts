@@ -11,7 +11,7 @@ interface Result {
   proposals: Proposal[]
 }
 
-export const getActiveProposals = async (
+export const getActiveVotingProposals = async (
   env: Env,
   time: number,
 ): Promise<Result> => {
