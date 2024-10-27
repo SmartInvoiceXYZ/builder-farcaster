@@ -1,21 +1,7 @@
-import { Env } from '@/services/builder/types'
+import { Env, Proposal } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { flatMap, pipe, uniqueBy } from 'remeda'
 import { JsonObject } from 'type-fest'
-
-interface Proposal {
-  id: string
-  proposalNumber: number
-  dao: {
-    id: string
-    name: string
-  }
-  title: string
-  proposer: string
-  timeCreated: string
-  voteStart: string
-  voteEnd: string
-}
 
 type Data = {
   proposals: Proposal[]

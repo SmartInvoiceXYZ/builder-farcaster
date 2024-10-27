@@ -1,19 +1,7 @@
-import { Env } from '@/services/builder/types'
+import { Dao, Env, Owner } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { flatMap, pipe, uniqueBy } from 'remeda'
 import { JsonObject } from 'type-fest'
-
-interface Dao {
-  id: string
-  name: string
-}
-
-interface Owner {
-  id: string
-  owner: string
-  dao: Dao
-  daoTokenCount: number
-}
 
 type Data = {
   owners: Owner[]
