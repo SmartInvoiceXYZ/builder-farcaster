@@ -9,6 +9,7 @@ import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
 import { DateTime } from 'luxon'
+import { filter, pipe } from 'remeda'
 import { JsonValue } from 'type-fest'
 
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
@@ -146,8 +147,12 @@ export async function handleActiveProposals() {
 
     const followers = await getFollowerFids(await getUserFid())
     for (const follower of followers) {
-      // Retrieve the addresses associated with the current follower
-      const addresses = await getFollowerAddresses(follower)
+      // Retrieve the ethereum addresses associated with the current follower
+      let addresses = await getFollowerAddresses(follower)
+      addresses = pipe(
+        addresses,
+        filter((address) => /^0x[a-fA-F0-9]{40}$/.test(address)),
+      )
 
       // If no addresses are found, skip to the next follower
       if (addresses.length === 0) {

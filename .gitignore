@@ -173,4 +173,4 @@ dist
 /bun.lockb
 /prisma/dev.db
 /prisma/dev.db-journal
-/graphql/graphql.config.yml
+/graphql.config.yml
