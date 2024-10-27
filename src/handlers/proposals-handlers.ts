@@ -129,7 +129,7 @@ async function getUserFid() {
 export async function handleActiveProposals() {
   try {
     const nowDateTime = DateTime.now()
-    const timeCacheKey = 'proposals_time'
+    const timeCacheKey = 'proposals_vote_time'
     let proposalsTime =
       (await getCache<number | null>(timeCacheKey)) ??
       nowDateTime.minus({ week: 1 }).toUnixInteger()
@@ -185,7 +185,7 @@ export async function handleActiveProposals() {
 
     proposalsTime = nowDateTime.toUnixInteger()
     await setCache(timeCacheKey, proposalsTime)
-    logger.info({ proposalsTime }, 'Proposals time cached successfully')
+    logger.info({ proposalsTime }, 'Proposals vote time cached successfully')
   } catch (error) {
     if (error instanceof Error) {
       logger.error(
