@@ -117,16 +117,19 @@ async function getUserFid() {
 }
 
 /**
- * Handles the active proposals by fetching, processing, and updating necessary information.
- * The method performs the following steps:
- * 1. Fetches the current date and time.
- * 2. Retrieves the last proposals fetch time from the cache.
- * 3. Fetches the active proposals from an external source.
- * 4. Processes each follower to intersect their DAOs with active proposals.
- * 5. Updates the proposals fetch time in the cache.
- * @returns A promise that resolves when the process is complete.
+ * Handles the process of fetching active voting proposals and notifying followers about them.
+ * The function performs the following steps:
+ * 1. Fetches the current time and retrieves the last cached proposals time.
+ * 2. Fetches active voting proposals from the environment based on the cached time.
+ * 3. Logs active proposals or indicates if no proposals are found.
+ * 4. Retrieves followers and their associated Ethereum addresses.
+ * 5. Retrieves DAOs associated with followers.
+ * 6. Queues notifications for followers concerning relevant proposals.
+ * 7. Updates the proposals time cache.
+ * If an error occurs during the process, it is logged accordingly.
+ * @returns A promise that resolves once all operations are completed.
  */
-export async function handleActiveProposals() {
+async function handleVotingProposalsNotifications() {
   try {
     const nowDateTime = DateTime.now()
     const timeCacheKey = 'proposals_vote_time'
@@ -196,4 +199,18 @@ export async function handleActiveProposals() {
       logger.error({ error }, 'Unknown error occurred')
     }
   }
+}
+
+/**
+ * Handles the active proposals by fetching, processing, and updating necessary information.
+ * The method performs the following steps:
+ * 1. Fetches the current date and time.
+ * 2. Retrieves the last proposals fetch time from the cache.
+ * 3. Fetches the active proposals from an external source.
+ * 4. Processes each follower to intersect their DAOs with active proposals.
+ * 5. Updates the proposals fetch time in the cache.
+ * @returns A promise that resolves when the process is complete.
+ */
+export async function handleActiveProposals() {
+  await handleVotingProposalsNotifications()
 }
