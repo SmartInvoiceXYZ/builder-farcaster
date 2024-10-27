@@ -23,13 +23,13 @@ jobs:
     steps:
       # Check out current repository
       - name: Fetch Sources
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.2.2
         with:
           ref: ${{ github.event.release.tag_name }} # Checkout the specific release tag
 
       # Set up Node.js and PNPM environment
       - name: Setup Node.js
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: ^20 # Use Node.js version 20 or above to ensure compatibility with the project
 
@@ -42,7 +42,7 @@ jobs:
       # Cache the PNPM store to speed up dependency installation
       - name: Cache PNPM Store
         id: pnpm-cache
-        uses: actions/cache@v4.1.1
+        uses: actions/cache@v4.1.2
         with:
           path: $(pnpm store path) # Cache the PNPM store directory
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }} # Unique cache key based on OS and lock file
