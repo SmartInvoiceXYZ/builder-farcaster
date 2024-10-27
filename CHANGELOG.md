@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.25] - 2024-10-27
+
+### 🚀 Features
+
+- *(proposals-handlers)* Validate follower addresses
+
+### 🚜 Refactor
+
+- *(builder)* Rename `DaoTokenOwner` and `daotokenOwners`
+
+### ⚙️ Miscellaneous Tasks
+
+- *(gitignore)* Update `.gitignore` for graphql config
+- *(graphql)* Move `builder.graphql` to `schemas` directory
+
 ## [1.0.0-alpha.24] - 2024-10-27
 
 ### 🎨 Styling
