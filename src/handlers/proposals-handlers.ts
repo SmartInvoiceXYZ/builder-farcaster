@@ -132,7 +132,7 @@ async function getUserFid() {
  * - Handles and logs errors that occur during the process.
  * @returns A promise that resolves when the notification handling is complete.
  */
-async function handleVotingProposalsNotifications() {
+async function handleVotingProposals() {
   try {
     const nowDateTime = DateTime.now()
     const timeCacheKey = 'proposals_vote_time'
@@ -219,7 +219,7 @@ async function handleVotingProposalsNotifications() {
  * successful processing.
  * @returns A promise that resolves when the method has completed execution.
  */
-async function handleEndingProposalsNotifications() {
+async function handleEndingProposals() {
   try {
     const nowDateTime = DateTime.now()
     const timeCacheKey = 'proposals_end_time'
@@ -300,8 +300,5 @@ async function handleEndingProposalsNotifications() {
  * @returns A promise that resolves when all notifications have been handled.
  */
 export async function handleActiveProposals() {
-  await Promise.all([
-    handleVotingProposalsNotifications(),
-    handleEndingProposalsNotifications(),
-  ])
+  await Promise.all([handleVotingProposals(), handleEndingProposals()])
 }
