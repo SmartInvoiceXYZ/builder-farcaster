@@ -1,21 +1,7 @@
-import { Env } from '@/services/builder/types'
+import { Env, Proposal } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { flatMap, pipe, uniqueBy } from 'remeda'
 import { JsonObject } from 'type-fest'
-
-interface Proposal {
-  id: string
-  proposalNumber: number
-  dao: {
-    id: string
-    name: string
-  }
-  title: string
-  proposer: string
-  timeCreated: string
-  voteStart: string
-  voteEnd: string
-}
 
 type Data = {
   proposals: Proposal[]
@@ -25,7 +11,7 @@ interface Result {
   proposals: Proposal[]
 }
 
-export const getActiveProposals = async (
+export const getActiveEndingProposals = async (
   env: Env,
   time: number,
 ): Promise<Result> => {
@@ -34,10 +20,11 @@ export const getActiveProposals = async (
       proposals(
         skip: 0
         first: 100
-        orderBy: timeCreated
+        orderBy: voteEnd
         orderDirection: asc
         where: {
-          timeCreated_gte: ${time}
+          voteEnd_gte: ${time}
+          voteEnd_lte: ${time + 86400}
           queued: false
           executed: false
           canceled: false
