@@ -17,6 +17,7 @@ import {
   sort,
   unique,
 } from 'remeda'
+import { JsonValue } from 'type-fest'
 
 /**
  * Handles invitations by fetching DAO owners, mapping them to their respective
@@ -57,7 +58,12 @@ export async function handleInvites() {
       }
 
       const sortedDaos = sort(daos, (a, b) => b.ownerCount - a.ownerCount)
-      logger.debug({ sortedDaos }, 'Sorted DAOs')
+
+      logger.debug({
+        type: 'invitation',
+        recipient: fid,
+        daos: sortedDaos as unknown as JsonValue,
+      })
     }
   } catch (error) {
     logger.error(
