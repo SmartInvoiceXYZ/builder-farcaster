@@ -1,6 +1,8 @@
 import { env } from '@/config'
 import { logger } from '@/logger'
 import { getDAOsTokenOwners } from '@/services/builder/get-daos-token-owners'
+import type { Dao } from '@/services/builder/types'
+import { entries, groupBy, map, mapValues, pipe, sort } from 'remeda'
 
 /**
  *
@@ -9,15 +11,33 @@ export async function handleInvites() {
   try {
     const { owners } = await getDAOsTokenOwners(env)
 
-    logger.debug({ owners })
+    const ownerToDaosMap = pipe(
+      owners,
+      groupBy((owner) => owner.owner),
+      mapValues((owners) =>
+        map(owners, (owner) => ({ id: owner.dao.id, name: owner.dao.name })),
+      ),
+      entries,
+      sort((entryA, entryB) => {
+        const [, daosA] = entryA as [string, Dao[]]
+        const [, daosB] = entryB as [string, Dao[]]
+        return daosA.length - daosB.length
+      }),
+      map((entry) => {
+        const [owner, daos] = entry as [string, Dao[]]
+        return { owner, daos }
+      }),
+    )
+
+    logger.debug({ ownerToDaosMap })
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(
-        { message: error.message, stack: error.stack },
-        'Error executing async function',
-      )
-    } else {
-      logger.error({ error }, 'Unknown error occurred')
-    }
+    logger.error(
+      {
+        message:
+          error instanceof Error ? error.message : 'Unknown error occurred',
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+      'Error executing async function',
+    )
   }
 }
