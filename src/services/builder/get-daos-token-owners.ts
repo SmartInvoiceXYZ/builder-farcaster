@@ -48,6 +48,7 @@ export const getDAOsTokenOwners = async (
         dao {
           id
           name
+          ownerCount
         }
         daoTokenCount
       }
