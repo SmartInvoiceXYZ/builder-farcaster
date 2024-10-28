@@ -18,6 +18,26 @@ import {
 } from 'remeda'
 
 /**
+ * Handles invitations by fetching DAO owners, mapping them to their respective
+ * FIDs, and creating an owner-to-DAO mapping.
+ */
+export async function handleInvites() {
+  try {
+    const sortedFidToDaoMap = await getSortedFidToDaoMap()
+    logger.debug({ sortedFidToDaoMap }, 'Sorted fidToDaoMap')
+  } catch (error) {
+    logger.error(
+      {
+        message:
+          error instanceof Error ? error.message : 'Unknown error occurred',
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+      'Error executing async function',
+    )
+  }
+}
+
+/**
  * Retrieves a sorted map of FIDs (Federated Identifiers) to DAOs (Decentralized Autonomous Organizations).
  * This method fetches DAOs token owners, groups them by owner address, maps FIDs to DAOs,
  * and finally sorts the map by the number of DAOs associated with each FID.
@@ -52,26 +72,6 @@ async function getSortedFidToDaoMap() {
   }
 
   return sortedFidToDaoMap
-}
-
-/**
- * Handles invitations by fetching DAO owners, mapping them to their respective
- * FIDs, and creating an owner-to-DAO mapping.
- */
-export async function handleInvites() {
-  try {
-    const sortedFidToDaoMap = await getSortedFidToDaoMap()
-    logger.debug({ sortedFidToDaoMap }, 'Sorted fidToDaoMap')
-  } catch (error) {
-    logger.error(
-      {
-        message:
-          error instanceof Error ? error.message : 'Unknown error occurred',
-        stack: error instanceof Error ? error.stack : undefined,
-      },
-      'Error executing async function',
-    )
-  }
 }
 
 /**
