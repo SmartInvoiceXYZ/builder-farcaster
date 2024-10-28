@@ -86,7 +86,12 @@ function groupOwnersByOwnerAddress(owners: Owner[]) {
     mapValues((owners) =>
       map(
         owners,
-        (owner) => ({ id: owner.dao.id, name: owner.dao.name }) as Dao,
+        (owner) =>
+          ({
+            id: owner.dao.id,
+            name: owner.dao.name,
+            ownerCount: owner.dao.ownerCount,
+          }) as Dao,
       ),
     ),
   )
