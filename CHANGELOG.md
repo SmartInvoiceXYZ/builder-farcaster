@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.26] - 2024-10-28
+
+### 🚀 Features
+
+- *(builder)* Add `getActiveEndingProposals` service
+- *(proposals-handlers)* Add ending proposals notifications
+- *(handlers)* Enhance proposal handling logic
+- *(handlers)* Enhance proposal notification processing
+
+### 🐛 Bug Fixes
+
+- *(builder)* Update proposal sorting and filtering logic
+- *(handlers)* Update cache key in `handleActiveProposals`
+- *(proposals-handlers)* Update proposals time range to 3 days
+- *(builder)* Correct comparison operator in GraphQL query
+
+### 🚜 Refactor
+
+- *(builder)* Add new types and remove local interfaces
+- *(handlers)* Rename `getActiveProposals` to `getActiveVotingProposals`
+- *(handlers)* Rename and refactor proposal handling functions
+- *(handlers)* Rename proposal handling methods
+- *(proposals-handlers)* Rename `endTime` to `voteEnd`
+
 ## [1.0.0-alpha.25] - 2024-10-27
 
 ### 🚀 Features
