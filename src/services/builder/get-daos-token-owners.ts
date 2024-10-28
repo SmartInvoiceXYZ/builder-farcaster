@@ -24,7 +24,7 @@ interface Result {
 export const getDAOsTokenOwners = async (
   env: Env,
   skip = 0,
-  first = 10,
+  first = 1000,
 ): Promise<Result> => {
   let allOwners: Owner[] = []
   const endpoints = [
