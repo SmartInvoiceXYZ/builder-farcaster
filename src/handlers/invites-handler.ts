@@ -2,6 +2,7 @@ import { env } from '@/config'
 import { logger } from '@/logger'
 import { getDAOsTokenOwners } from '@/services/builder/get-daos-token-owners'
 import type { Dao } from '@/services/builder/types'
+import { getUserByVerification } from '@/services/warpcast/get-user-by-verification'
 import { entries, groupBy, map, mapValues, pipe, sort } from 'remeda'
 
 /**
@@ -29,7 +30,27 @@ export async function handleInvites() {
       }),
     )
 
-    logger.debug({ ownerToDaosMap })
+    const fidToDaoMap: Record<number, Dao[]> = {}
+
+    for (const { owner, daos } of ownerToDaosMap) {
+      try {
+        const {
+          user: { fid },
+        } = await getUserByVerification(env, owner)
+        if (fid) {
+          fidToDaoMap[fid] = [...new Set([...fidToDaoMap[fid], ...daos])]
+        }
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          !error.message.startsWith('No FID has connected')
+        ) {
+          logger.error({ error }, 'Error fetching Farcaster user.')
+        }
+      }
+    }
+
+    logger.debug({ fidToDaoMap })
   } catch (error) {
     logger.error(
       {
