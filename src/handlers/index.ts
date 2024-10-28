@@ -6,7 +6,7 @@ import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
 
-const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
+export const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
 
 /**
  * Retrieves the follower FIDs (unique follower IDs) for a given FID (unique ID).

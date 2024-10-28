@@ -1,4 +1,6 @@
+import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
+import { CACHE_MAX_AGE_MS } from '@/handlers/index'
 import { logger } from '@/logger'
 import { getDAOsTokenOwners } from '@/services/builder/get-daos-token-owners'
 import type { Dao, Owner } from '@/services/builder/types'
@@ -16,11 +18,21 @@ import {
 } from 'remeda'
 
 /**
- * Handles invitations by fetching DAO owners, mapping them to their respective
- * FIDs, and creating an owner-to-DAO mapping.
+ * Retrieves a sorted map of FIDs (Federated Identifiers) to DAOs (Decentralized Autonomous Organizations).
+ * This method fetches DAOs token owners, groups them by owner address, maps FIDs to DAOs,
+ * and finally sorts the map by the number of DAOs associated with each FID.
+ * @returns A promise that resolves to an object where the keys are FIDs and the values are arrays of DAOs, sorted by the number of DAOs.
  */
-export async function handleInvites() {
-  try {
+async function getSortedFidToDaoMap() {
+  const cacheKey = 'sorted_fid_to_dao_map'
+  let sortedFidToDaoMap = await getCache<Record<number, Dao[]> | null>(
+    cacheKey,
+    CACHE_MAX_AGE_MS,
+  )
+
+  if (sortedFidToDaoMap) {
+    logger.debug('Sorted FID to DAO map fetched from cache')
+  } else {
     logger.info('Fetching DAOs token owners')
     const { owners } = await getDAOsTokenOwners(env)
     logger.debug({ owners }, 'Fetched owners')
@@ -33,7 +45,22 @@ export async function handleInvites() {
     const fidToDaoMap = await mapFIDsToDAOs(ownerToDaosMap)
 
     logger.info('Sorting fidToDaoMap by the number of DAOs')
-    const sortedFidToDaoMap = sortFidToDaoMap(fidToDaoMap)
+    sortedFidToDaoMap = sortFidToDaoMap(fidToDaoMap)
+
+    await setCache(cacheKey, sortedFidToDaoMap)
+    logger.info('Sorted FID to DAO map fetched and cached successfully')
+  }
+
+  return sortedFidToDaoMap
+}
+
+/**
+ * Handles invitations by fetching DAO owners, mapping them to their respective
+ * FIDs, and creating an owner-to-DAO mapping.
+ */
+export async function handleInvites() {
+  try {
+    const sortedFidToDaoMap = await getSortedFidToDaoMap()
     logger.debug({ sortedFidToDaoMap }, 'Sorted fidToDaoMap')
   } catch (error) {
     logger.error(
@@ -118,6 +145,7 @@ function sortFidToDaoMap(fidToDaoMap: Record<number, Dao[]>) {
     fidToDaoMap,
     entries<Record<number, Dao[]>>,
     sort(([, daosA], [, daosB]) => daosA.length - daosB.length),
-    fromEntries,
-  )
+    (sortedEntries) =>
+      fromEntries(sortedEntries.map(([key, value]) => [Number(key), value])),
+  ) as Record<number, Dao[]>
 }
