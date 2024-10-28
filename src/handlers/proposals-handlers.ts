@@ -254,17 +254,17 @@ async function handleEndingProposals() {
     const notifiedProposalsCacheKey = 'notified_proposals_map'
     let notifiedProposalsMap = new Map<
       string,
-      { followers: Set<number>; endTime: number }
+      { followers: Set<number>; voteEnd: number }
     >(
       pipe(
         (await getCache<
-          [string, { followers: number[]; endTime: number }][] | null
+          [string, { followers: number[]; voteEnd: number }][] | null
         >(notifiedProposalsCacheKey)) ?? [],
-        map(([proposalId, { followers, endTime }]) => [
+        map(([proposalId, { followers, voteEnd }]) => [
           proposalId,
-          { followers: new Set(followers), endTime: endTime },
+          { followers: new Set(followers), voteEnd },
         ]),
-      ) as Iterable<[string, { followers: Set<number>; endTime: number }]>,
+      ) as Iterable<[string, { followers: Set<number>; voteEnd: number }]>,
     )
     logger.debug(
       { notifiedProposalsMapSize: notifiedProposalsMap.size },
@@ -276,7 +276,7 @@ async function handleEndingProposals() {
     notifiedProposalsMap = new Map(
       pipe(
         Array.from(notifiedProposalsMap.entries()),
-        filter(([, { endTime }]) => endTime > nowTime),
+        filter(([, { voteEnd }]) => voteEnd > nowTime),
       ),
     )
     logger.debug(
@@ -328,7 +328,7 @@ async function handleEndingProposals() {
         if (!notifiedProposalsMap.has(proposal.id)) {
           notifiedProposalsMap.set(proposal.id, {
             followers: new Set<number>(),
-            endTime: Number(proposal.voteEnd),
+            voteEnd: Number(proposal.voteEnd),
           })
           logger.debug(
             { proposalId: proposal.id },
@@ -375,9 +375,9 @@ async function handleEndingProposals() {
       notifiedProposalsCacheKey,
       pipe(
         Array.from(notifiedProposalsMap.entries()),
-        map(([proposalId, { followers, endTime }]) => [
+        map(([proposalId, { followers, voteEnd }]) => [
           proposalId,
-          { followers: Array.from(followers), endTime },
+          { followers: Array.from(followers), voteEnd },
         ]),
       ),
     )
