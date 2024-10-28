@@ -10,6 +10,7 @@ import {
   entries,
   fromEntries,
   groupBy,
+  keys,
   map,
   mapValues,
   pipe,
@@ -24,7 +25,13 @@ import {
 export async function handleInvites() {
   try {
     const sortedFidToDaoMap = await getSortedFidToDaoMap()
-    logger.debug({ sortedFidToDaoMap }, 'Sorted fidToDaoMap')
+    logger.debug(
+      {
+        sortedFidToDaoMap,
+        sortedFidToDaoSize: keys(sortedFidToDaoMap).length,
+      },
+      'Sorted fidToDaoMap',
+    )
   } catch (error) {
     logger.error(
       {
