@@ -10,7 +10,7 @@ import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
 import { DateTime } from 'luxon'
-import { filter, last, pipe } from 'remeda'
+import { filter, last, map, pipe } from 'remeda'
 import { JsonValue } from 'type-fest'
 
 const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
@@ -222,11 +222,17 @@ async function handleVotingProposals() {
 async function handleEndingProposals() {
   try {
     const nowDateTime = DateTime.now()
+    logger.debug({ nowDateTime }, 'Current date and time retrieved')
     const timeCacheKey = 'proposals_end_time'
     let proposalsTime =
       (await getCache<number | null>(timeCacheKey)) ??
-      nowDateTime.minus({ day: 1 }).toUnixInteger()
+      nowDateTime.minus({ days: 1 }).toUnixInteger()
+    logger.debug(
+      { proposalsTime },
+      'Proposals time retrieved from cache or set to default',
+    )
 
+    // Fetch proposals ending within one day from the last recorded proposalsTime
     const { proposals } = await getActiveEndingProposals(env, proposalsTime)
     logger.info(
       { proposalsTime, proposals },
@@ -238,43 +244,144 @@ async function handleEndingProposals() {
       return
     }
 
+    // Retrieve all followers once (assuming there's a shared user fid cacheable by getUserFid)
     const followers = await getFollowerFids(await getUserFid())
+    logger.debug(
+      { followersCount: followers.length },
+      'Followers retrieved successfully',
+    )
+
+    const notifiedProposalsCacheKey = 'notified_proposals_map'
+    let notifiedProposalsMap = new Map<
+      string,
+      { followers: Set<number>; endTime: number }
+    >(
+      pipe(
+        (await getCache<
+          [string, { followers: number[]; endTime: number }][] | null
+        >(notifiedProposalsCacheKey)) ?? [],
+        map(([proposalId, { followers, endTime }]) => [
+          proposalId,
+          { followers: new Set(followers), endTime: endTime },
+        ]),
+      ) as Iterable<[string, { followers: Set<number>; endTime: number }]>,
+    )
+    logger.debug(
+      { notifiedProposalsMapSize: notifiedProposalsMap.size },
+      'Notified proposals map retrieved from cache',
+    )
+
+    // Cleanup outdated proposals from the map
+    const nowTime = nowDateTime.toUnixInteger()
+    notifiedProposalsMap = new Map(
+      pipe(
+        Array.from(notifiedProposalsMap.entries()),
+        filter(([, { endTime }]) => endTime > nowTime),
+      ),
+    )
+    logger.debug(
+      { notifiedProposalsMapSize: notifiedProposalsMap.size },
+      'Outdated proposals cleaned from the map',
+    )
+
     for (const follower of followers) {
+      logger.debug({ follower }, 'Processing follower')
       // Retrieve the ethereum addresses associated with the current follower
       let addresses = await getFollowerAddresses(follower)
       addresses = pipe(
         addresses,
         filter((address) => /^0x[a-fA-F0-9]{40}$/.test(address)),
       )
+      logger.debug(
+        { follower, addressesCount: addresses.length },
+        'Addresses retrieved and filtered',
+      )
 
       // If no addresses are found, skip to the next follower
       if (addresses.length === 0) {
+        logger.debug({ follower }, 'No addresses found, skipping follower')
         continue
       }
 
       // Retrieve the DAOs associated with the current follower and their addresses
       const daos = await getFollowerDAOs(follower, addresses)
+      if (daos) {
+        logger.debug(
+          { follower, daosCount: daos.length },
+          'DAOs retrieved for follower',
+        )
+      }
 
       // If no DAOs are found, skip to the next follower
       if (!daos || daos.length <= 0) {
+        logger.debug({ follower }, 'No DAOs found, skipping follower')
         continue
       }
 
       // Loop through each proposal in the proposals array
       for (const proposal of proposals) {
-        // If the proposal's DAO ID is not in the list of DAOs for the current follower, skip to the next proposal
-        if (!daos.includes(proposal.dao.id)) {
+        logger.debug(
+          { proposalId: proposal.id, follower },
+          'Processing proposal for follower',
+        )
+        // Get or initialize the set of notified followers for this proposal
+        if (!notifiedProposalsMap.has(proposal.id)) {
+          notifiedProposalsMap.set(proposal.id, {
+            followers: new Set<number>(),
+            endTime: Number(proposal.voteEnd),
+          })
+          logger.debug(
+            { proposalId: proposal.id },
+            'Initialized notified followers set for proposal',
+          )
+        }
+        const notifiedFollowers =
+          notifiedProposalsMap.get(proposal.id)?.followers ?? new Set<number>()
+
+        // If we've already sent a notification to this follower about this proposal, skip it
+        if (notifiedFollowers.has(follower)) {
+          logger.debug(
+            { proposalId: proposal.id, follower },
+            'Follower already notified for this proposal, skipping',
+          )
           continue
         }
 
-        // Add the proposal to the queue for notifications
+        // If the proposal's DAO ID is not in the list of DAOs for the current follower, skip to the next proposal
+        if (!daos.includes(proposal.dao.id)) {
+          logger.debug(
+            { proposalId: proposal.id, follower },
+            'Proposal DAO ID not in follower DAOs, skipping proposal',
+          )
+          continue
+        }
+
+        // Add the proposal to the queue for notifications and mark the follower as notified
         await addToQueue({
           type: 'notification',
           recipient: follower,
           proposal: proposal as unknown as JsonValue,
         })
+        logger.info(
+          { proposalId: proposal.id, follower },
+          'Notification added to queue for follower and proposal',
+        )
+        notifiedFollowers.add(follower)
       }
     }
+
+    // Update the cache for notified proposals map
+    await setCache(
+      notifiedProposalsCacheKey,
+      pipe(
+        Array.from(notifiedProposalsMap.entries()),
+        map(([proposalId, { followers, endTime }]) => [
+          proposalId,
+          { followers: Array.from(followers), endTime },
+        ]),
+      ),
+    )
+    logger.debug('Notified proposals map cache updated successfully')
 
     proposalsTime = nowDateTime.toUnixInteger()
     await setCache(timeCacheKey, proposalsTime)
