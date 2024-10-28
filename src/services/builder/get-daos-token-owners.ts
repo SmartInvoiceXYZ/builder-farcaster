@@ -4,7 +4,7 @@ import { flatMap, pipe } from 'remeda'
 import { JsonObject } from 'type-fest'
 
 type Data = {
-  daotokenOwners: Owner[]
+  owners: Owner[]
 } & JsonObject
 
 interface Result {
@@ -22,7 +22,7 @@ export const getDAOsTokenOwners = async (
 
   const query = gql`
     {
-      daotokenOwners(
+      owners: daotokenOwners(
         skip: ${currentSkip}
         first: ${first}
         orderBy: daoTokenCount
@@ -54,7 +54,7 @@ export const getDAOsTokenOwners = async (
         endpoints.map(async (endpoint) => {
           const client = new GraphQLClient(endpoint)
           const response = await client.request<Data>(query)
-          return response.daotokenOwners
+          return response.owners
         }),
       )
 
