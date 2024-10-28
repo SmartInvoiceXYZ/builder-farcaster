@@ -11,7 +11,7 @@ interface Result {
   proposals: Proposal[]
 }
 
-export const getActiveProposals = async (
+export const getActiveEndingProposals = async (
   env: Env,
   time: number,
 ): Promise<Result> => {
@@ -20,10 +20,11 @@ export const getActiveProposals = async (
       proposals(
         skip: 0
         first: 100
-        orderBy: timeCreated
+        orderBy: voteEnd
         orderDirection: asc
         where: {
-          timeCreated_gte: ${time}
+          voteEnd_gte: ${time}
+          voteEnd_lte: ${time + 86400}
           queued: false
           executed: false
           canceled: false
