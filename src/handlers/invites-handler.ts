@@ -51,9 +51,13 @@ export async function handleInvites() {
       'Followers retrieved successfully',
     )
 
-    for (const [fid, daos] of entries<Record<number, Dao[]>>(
-      sortedFidToDaoMap,
-    )) {
+    const fidDaoEntries = entries<Record<number, Dao[]>>(sortedFidToDaoMap)
+    logger.debug(
+      { fidDaoEntriesCount: fidDaoEntries.length },
+      'FID to DAO entries retrieved successfully',
+    )
+
+    for (const [fid, daos] of fidDaoEntries) {
       if (followers.includes(Number(fid))) {
         return
       }
