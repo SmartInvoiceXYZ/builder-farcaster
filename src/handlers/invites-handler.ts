@@ -2,6 +2,7 @@ import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { CACHE_MAX_AGE_MS, getFollowerFids, getUserFid } from '@/handlers/index'
 import { logger } from '@/logger'
+import { addToQueue } from '@/queue'
 import { getDAOsTokenOwners } from '@/services/builder/get-daos-token-owners'
 import type { Dao, Owner } from '@/services/builder/types'
 import { getUserByVerification } from '@/services/warpcast/get-user-by-verification'
@@ -34,14 +35,14 @@ export async function handleInvites() {
       'Sorted fidToDaoMap',
     )
 
-    // const now = new Date()
-    // const isSaturday = now.getDay() === 6
-    // const isFourteenOClock = now.getHours() === 14
+    const now = new Date()
+    const isSaturday = now.getDay() === 6
+    const isFourteenOClock = now.getHours() === 14
 
-    // if (!(isSaturday && isFourteenOClock)) {
-    //   logger.warn('Not a Saturday or 14:00')
-    //   return
-    // }
+    if (!(isSaturday && isFourteenOClock)) {
+      logger.warn('Not a Saturday or 14:00')
+      return
+    }
 
     // Retrieve all followers once (assuming there's a shared user fid cacheable by getUserFid)
     const followers = await getFollowerFids(await getUserFid())
@@ -59,11 +60,12 @@ export async function handleInvites() {
 
       const sortedDaos = sort(daos, (a, b) => b.ownerCount - a.ownerCount)
 
-      logger.debug({
+      await addToQueue({
         type: 'invitation',
         recipient: fid,
         daos: sortedDaos as unknown as JsonValue,
       })
+      logger.info({ fid, daos }, 'Invitation added to queue for member')
     }
   } catch (error) {
     logger.error(
