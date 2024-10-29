@@ -59,7 +59,7 @@ export async function handleInvites() {
 
     for (const [fid, daos] of fidDaoEntries) {
       if (followers.includes(Number(fid))) {
-        return
+        continue
       }
 
       const sortedDaos = sort(daos, (a, b) => b.ownerCount - a.ownerCount)
