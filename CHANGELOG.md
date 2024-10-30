@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.30] - 2024-10-30
+
+### 🚜 Refactor
+
+- *(queues-handler)* Break long message strings into lines
+
 ## [1.0.0-alpha.29] - 2024-10-30
 
 ### 🚜 Refactor
