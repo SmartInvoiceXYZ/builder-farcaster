@@ -2,6 +2,7 @@ import { handleActiveProposals } from '@/handlers/proposals-handlers'
 import { consumeQueue } from '@/handlers/queues-handler'
 import { Command } from 'commander'
 import packageJson from '../package.json'
+import { handleInvites } from '@/handlers/invites-handler'
 
 // Create a new Command instance for the CLI tool
 const program = new Command()
@@ -22,6 +23,12 @@ processCommand
   .command('proposals')
   .description('Process proposals from API and enqueue tasks')
   .action(handleActiveProposals)
+
+// Register the 'invites' sub-command under 'process'
+processCommand
+  .command('invites')
+  .description('Process invitations')
+  .action(handleInvites)
 
 // Register the 'queues' command
 const queueCommand = program

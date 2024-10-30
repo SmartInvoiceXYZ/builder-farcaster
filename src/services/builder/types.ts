@@ -8,6 +8,7 @@ export interface Env {
 export interface Dao {
   id: string
   name: string
+  ownerCount: number
 }
 
 export interface Owner {
