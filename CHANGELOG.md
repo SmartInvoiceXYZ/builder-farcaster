@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.28] - 2024-10-30
+
+### 🚜 Refactor
+
+- *(queues-handler)* Simplify message generation for DAO notifications
+
 ## [1.0.0-alpha.27] - 2024-10-30
 
 ### 🚀 Features
