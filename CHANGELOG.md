@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.31] - 2024-10-30
+
+### ◀️ Revert
+
+- *(workflows)* Add monthly cron job to process invites
+
 ## [1.0.0-alpha.30] - 2024-10-30
 
 ### 🚜 Refactor
