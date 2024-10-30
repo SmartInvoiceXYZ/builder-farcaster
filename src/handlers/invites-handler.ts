@@ -35,15 +35,6 @@ export async function handleInvites() {
       'Sorted fidToDaoMap',
     )
 
-    const now = new Date()
-    const isSaturday = now.getDay() === 6
-    const isFourteenOClock = now.getHours() === 14
-
-    if (!(isSaturday && isFourteenOClock)) {
-      logger.warn('Not a Saturday or 14:00')
-      return
-    }
-
     // Retrieve all followers once (assuming there's a shared user fid cacheable by getUserFid)
     const followers = await getFollowerFids(await getUserFid())
     logger.debug(
