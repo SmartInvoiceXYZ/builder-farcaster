@@ -39,12 +39,18 @@ async function handleVotingProposals() {
       nowDateTime.minus({ days: 3 }).toUnixInteger()
 
     const { proposals } = await getActiveVotingProposals(env, proposalsTime)
+
+    // Filter proposals that have voteStart before now
+    const filteredProposals = proposals.filter(
+      (proposal) => Number(proposal.voteStart) < nowDateTime.toUnixInteger(),
+    )
+
     logger.info(
-      { proposalsTime, proposals },
+      { proposalsTime, proposals: filteredProposals },
       'Active proposals fetched successfully',
     )
 
-    if (proposals.length === 0) {
+    if (filteredProposals.length === 0) {
       logger.warn('No active voting proposals found, terminating execution.')
       return
     }
@@ -71,8 +77,8 @@ async function handleVotingProposals() {
         continue
       }
 
-      // Loop through each proposal in the proposals array
-      for (const proposal of proposals) {
+      // Loop through each proposal in the filtered proposals array
+      for (const proposal of filteredProposals) {
         // If the proposal's DAO ID is not in the list of DAOs for the current follower, skip to the next proposal
         if (!daos.includes(proposal.dao.id)) {
           continue
@@ -87,7 +93,7 @@ async function handleVotingProposals() {
       }
     }
 
-    const proposalVoteStart = last(proposals)?.voteStart
+    const proposalVoteStart = last(filteredProposals)?.voteStart
     proposalsTime = proposalVoteStart
       ? Number(proposalVoteStart)
       : nowDateTime.toUnixInteger()
