@@ -97,9 +97,8 @@ async function handleInvitation(taskId: string, data: InvitationData) {
 
     const message =
       uniqueDaos.length === 1
-        ? `👋 Hey there! You're a proud member of ${daoNames} DAO, powered by Builder Protocol. 🎉 Want to stay in the loop for the latest proposals? Follow @builderbot on Warpcast to never miss an update! 🚀`
-        : `👋 Hey there! You’re a member of ${daoCount} DAOs built by Builder Protocol: ${daoNames}. 🚀 Stay informed about new proposals in your DAOs by following @builderbot on Warpcast and make your voice count! 🎉` +
-          `If you want to get notified about new proposals on DAOs you're a member of, follow @builderbot on Warpcast!`
+        ? `👋 Hey there! You're part of the ${daoNames} DAO, built on Builder Protocol. 🎉 Stay updated on new proposals and exciting developments by following @builderbot on Warpcast! 🚀 Let's keep building together!`
+        : `👋 Hey there! You're part of ${daoCount} DAOs built with Builder Protocol: ${daoNames}. 🚀 Want the latest proposal updates in your DAOs? Follow @builderbot on Warpcast to stay informed and be a part of the action! 🎉`
     const idempotencyKey = sha256(message).toString()
 
     const result = await sendDirectCast(env, recipient, message, idempotencyKey)
