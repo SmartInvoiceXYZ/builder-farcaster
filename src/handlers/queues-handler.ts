@@ -5,10 +5,11 @@ import { sendDirectCast } from '@/services/warpcast/send-direct-cast'
 import { isPast, toRelativeTime } from '@/utils'
 import { PrismaClient } from '@prisma/client'
 import sha256 from 'crypto-js/sha256'
+import { uniqueBy } from 'remeda'
 
 type TaskData = {
-  type: 'notification' | 'test'
-} & NotificationData
+  type: 'notification' | 'test' | 'invitation'
+} & (NotificationData | InvitationData)
 
 interface NotificationData {
   recipient: number
@@ -25,6 +26,15 @@ interface NotificationData {
     voteStart: string
     voteEnd: string
   }
+}
+
+interface InvitationData {
+  recipient: number
+  daos: {
+    id: string
+    name: string
+    ownerCount: number
+  }[]
 }
 
 /**
@@ -73,6 +83,47 @@ async function handleNotification(taskId: string, data: NotificationData) {
 }
 
 /**
+ * Handles invitation tasks.
+ * @param taskId - The unique identifier for the task.
+ * @param data - The data associated with the invitation task.
+ * @returns Resolves when the invitation has been successfully handled.
+ */
+async function handleInvitation(taskId: string, data: InvitationData) {
+  try {
+    const { recipient, daos } = data
+    const uniqueDaos = uniqueBy(daos, (dao) => dao.name)
+    const daoCount = uniqueDaos.length.toString()
+    const daoNames = uniqueDaos.map((dao) => dao.name).join(', ')
+
+    const message =
+      uniqueDaos.length === 1
+        ? `👋 Hey there! You're a proud member of ${daoNames} DAO, powered by Builder Protocol. 🎉 Want to stay in the loop for the latest proposals? Follow @builderbot on Warpcast to never miss an update! 🚀`
+        : `👋 Hey there! You’re a member of ${daoCount} DAOs built by Builder Protocol: ${daoNames}. 🚀 Stay informed about new proposals in your DAOs by following @builderbot on Warpcast and make your voice count! 🎉` +
+          `If you want to get notified about new proposals on DAOs you're a member of, follow @builderbot on Warpcast!`
+    const idempotencyKey = sha256(message).toString()
+
+    const result = await sendDirectCast(env, recipient, message, idempotencyKey)
+
+    if (!result.success) {
+      throw new Error(`Non-successful result: ${JSON.stringify(result)}`)
+    }
+
+    logger.info({ recipient, result }, 'Invitation sent successfully.')
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(
+        { message: error.message, stack: error.stack },
+        'Failed to send invitation',
+      )
+    } else {
+      logger.error({ error }, 'Unknown error occurred')
+    }
+
+    await retryTask(taskId)
+  }
+}
+
+/**
  * Processes a queue of tasks from the database with an optional limit on the number of tasks to process at one time.
  *
  * This function retrieves pending tasks from the database, processes each task by its type, and marks them as completed.
@@ -103,6 +154,9 @@ export const consumeQueue = async (limit?: number) => {
       switch (taskData.type) {
         case 'notification':
           await handleNotification(task.taskId, taskData as NotificationData)
+          break
+        case 'invitation':
+          await handleInvitation(task.taskId, taskData as InvitationData)
           break
         default:
           logger.error({ task }, 'Unknown task type')
