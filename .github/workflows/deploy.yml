@@ -134,7 +134,7 @@ jobs:
             # Add a crontab task to consume queues every minute
             echo "* * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js queues consume -l 10 >> logs/consume_queues.log 2>&1" >> cron_jobs.txt
             # Add a crontab task to process invites every first day of the month at 16:00
-            echo "0 16 1 * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js process invites >> logs/process_invites.log 2>&1" >> cron_jobs.txt
+            echo "0 16 15 * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js process invites >> logs/process_invites.log 2>&1" >> cron_jobs.txt
             crontab cron_jobs.txt # Update crontab with new tasks
             rm -f cron_jobs.txt # Remove temporary crontab file
           EOF
