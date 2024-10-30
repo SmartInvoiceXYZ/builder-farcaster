@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.29] - 2024-10-30
+
+### 🚜 Refactor
+
+- *(handlers)* Clean dao names and update message format
+
 ## [1.0.0-alpha.28] - 2024-10-30
 
 ### 🚜 Refactor
