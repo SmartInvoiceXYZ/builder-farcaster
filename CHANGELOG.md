@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.27] - 2024-10-30
+
+### 🚀 Features
+
+- *(builder)* Add method to fetch DAO token owners
+- *(cli)* Add invites processing command
+- *(builder)* Increase default value for `first` to 1000
+- *(warpcast)* Add `getUserByVerification` service
+- *(builder)* Add `ownerCount` to `Dao` interface
+
+### 🐛 Bug Fixes
+
+- *(invites-handler)* Use `continue` instead of `return` for loop
+
+### 🚜 Refactor
+
+- *(builder)* Rename `daotokenOwners` to `owners`
+- *(services)* Restructure `getDAOsTokenOwners` pagination logic
+- *(invites-handler)* Enhance owner to DAOs mapping
+- *(handlers)* Extract follower and user functions
+- *(invites-handler)* Map DAO owners to Farcaster users
+- *(invites-handler)* Restructure and improve error handling
+- *(invites-handler)* Add caching to invites handler
+- *(invites-handler)* Relocate `handleInvites` function
+- *(invites-handler)* Add `ownerCount` to `Dao` mapping
+- *(invites-handler)* Log size of `sortedFidToDaoMap`
+- *(invites-handler)* Add follower filtering for DAOs
+- *(invites-handler)* Enhance logging for invite sorting
+- *(invites-handler)* Enable scheduled invitation logic
+- *(invites-handler)* Add debug logging for `fidDaoEntries` count
+- *(queues-handler)* Add support for invitation tasks
+- *(queues-handler)* Enhance notification messages
+- *(invites-handler)* Remove unnecessary time checks
+
+### ⚙️ Miscellaneous Tasks
+
+- *(scripts)* Add `dev:invites` script to `package.json`
+- *(workflows)* Add monthly cron job to process invites
+- *(workflows)* Update cron schedule for invite processing
+
 ## [1.0.0-alpha.26] - 2024-10-28
 
 ### 🚀 Features
