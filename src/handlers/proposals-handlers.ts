@@ -10,93 +10,157 @@ import { logger } from '@/logger'
 import { addToQueue } from '@/queue'
 import { getActiveProposals } from '@/services/builder/get-active-proposals'
 import { DateTime } from 'luxon'
-import { filter, last, map, pipe } from 'remeda'
+import { filter, map, pipe } from 'remeda'
 import { JsonValue } from 'type-fest'
 
 /**
- * Handles the notifications related to active voting proposals.
- *
- * This method does the following:
- * - Fetches the current date and time.
- * - Retrieves the cached time for proposal votes or sets a default time.
- * - Fetches active voting proposals based on the proposals time.
- * - Logs the fetched active proposals.
- * - Retrieves followers and their associated Ethereum addresses.
- * - Retrieves DAOs associated with followers and their addresses.
- * - Adds proposals to the notification queue for followers interested in the specific DAOs.
- * - Updates the cache with the latest proposal vote time.
- * - Handles and logs errors that occur during the process.
- * @returns A promise that resolves when the notification handling is complete.
+ * Handles proposals that are pending for voting and sends notifications.
  */
 async function handleVotingProposals() {
   try {
-    const nowDateTime = DateTime.now()
-    const timeCacheKey = 'proposals_vote_time'
-    let proposalsTime =
-      (await getCache<number | null>(timeCacheKey)) ??
-      nowDateTime.minus({ days: 3 }).toUnixInteger()
-
+    logger.info('Fetching active proposals...')
     const { proposals } = await getActiveProposals()
+    logger.info({ proposals }, 'Active proposals retrieved.')
 
-    // Filter proposals that have voteStart before now
-    const filteredProposals = proposals.filter(
-      (proposal) => Number(proposal.voteStart) < nowDateTime.toUnixInteger(),
-    )
+    const currentUnixTimestamp = DateTime.now().toSeconds() // Current Unix timestamp in seconds
+    logger.debug({ currentUnixTimestamp }, 'Current Unix timestamp calculated.')
 
+    // Filter proposals where voting has not started yet
+    const votingProposals = filter(proposals, (proposal) => {
+      const voteStartTimestamp = Number(proposal.voteStart)
+      const voteEndTimestamp = Number(proposal.voteEnd)
+      logger.debug(
+        { proposalId: proposal.id, voteStartTimestamp, voteEndTimestamp },
+        'Evaluating proposal voting time.',
+      )
+      return (
+        voteStartTimestamp > currentUnixTimestamp &&
+        voteEndTimestamp > currentUnixTimestamp
+      )
+    })
+
+    const proposalCount = votingProposals.length
+    if (proposalCount === 0) {
+      logger.warn('No active proposals found, terminating execution.')
+      return
+    }
     logger.info(
-      { proposalsTime, proposals: filteredProposals },
+      { proposalCount, votingProposals },
       'Active proposals fetched successfully',
     )
 
-    if (filteredProposals.length === 0) {
-      logger.warn('No active voting proposals found, terminating execution.')
-      return
-    }
+    const userFid = await getUserFid()
+    logger.debug({ userFid }, 'User FID retrieved.')
+    const followers = await getFollowerFids(userFid)
+    logger.info({ followerCount: followers.length }, 'Follower FIDs retrieved.')
 
-    const followers = await getFollowerFids(await getUserFid())
     for (const follower of followers) {
+      logger.debug({ follower }, 'Processing follower.')
       // Retrieve the ethereum addresses associated with the current follower
       let addresses = await getFollowerAddresses(follower)
+      logger.debug({ follower, addresses }, 'Follower addresses retrieved.')
+
       addresses = pipe(
         addresses,
         filter((address) => /^0x[a-fA-F0-9]{40}$/.test(address)),
       )
+      logger.debug(
+        { follower, addresses },
+        'Filtered valid Ethereum addresses.',
+      )
 
       // If no addresses are found, skip to the next follower
       if (addresses.length === 0) {
+        logger.info(
+          { follower },
+          'No valid addresses found for follower, skipping.',
+        )
         continue
       }
 
       // Retrieve the DAOs associated with the current follower and their addresses
       const daos = await getFollowerDAOs(follower, addresses)
+      logger.debug(
+        { follower, daos },
+        'DAOs associated with follower retrieved.',
+      )
 
       // If no DAOs are found, skip to the next follower
       if (!daos || daos.length <= 0) {
+        logger.info({ follower }, 'No DAOs found for follower, skipping.')
         continue
       }
 
+      // Retrieve notified proposals from cache
+      const cacheKey = `notified_voting_proposals_${follower.toString()}`
+      logger.debug({ cacheKey }, 'Retrieving notified proposals from cache.')
+      let notifiedProposals = await getCache<string[]>(cacheKey)
+      if (!notifiedProposals) {
+        logger.info(
+          { follower },
+          'No notified proposals found in cache, initializing new set.',
+        )
+        notifiedProposals = []
+      } else {
+        logger.debug(
+          { follower, notifiedProposals },
+          'Notified proposals retrieved from cache.',
+        )
+      }
+
+      // Convert notifiedProposals to a Set for efficient lookups
+      const notifiedProposalsSet = new Set(notifiedProposals)
+
       // Loop through each proposal in the filtered proposals array
-      for (const proposal of filteredProposals) {
+      for (const proposal of votingProposals) {
+        logger.debug(
+          { proposalId: proposal.id },
+          'Processing proposal for follower.',
+        )
         // If the proposal's DAO ID is not in the list of DAOs for the current follower, skip to the next proposal
         if (!daos.includes(proposal.dao.id)) {
+          logger.debug(
+            { proposalId: proposal.id, follower },
+            'Proposal DAO ID not associated with follower, skipping.',
+          )
+          continue
+        }
+
+        // Check if this proposal has already been notified
+        if (notifiedProposalsSet.has(proposal.id)) {
+          logger.debug(
+            { proposalId: proposal.id, follower },
+            'Proposal already notified, skipping.',
+          )
           continue
         }
 
         // Add the proposal to the queue for notifications
+        logger.info(
+          { proposalId: proposal.id, follower },
+          'Adding proposal to notification queue.',
+        )
         await addToQueue({
           type: 'notification',
           recipient: follower,
           proposal: proposal as unknown as JsonValue,
         })
-      }
-    }
 
-    const proposalVoteStart = last(filteredProposals)?.voteStart
-    proposalsTime = proposalVoteStart
-      ? Number(proposalVoteStart)
-      : nowDateTime.toUnixInteger()
-    await setCache(timeCacheKey, proposalsTime)
-    logger.info({ proposalsTime }, 'Proposals vote time cached successfully')
+        // Mark this proposal as notified
+        notifiedProposalsSet.add(proposal.id)
+        logger.debug(
+          { proposalId: proposal.id, follower },
+          'Proposal marked as notified.',
+        )
+      }
+
+      // Update the cache with the new set of notified proposals
+      logger.debug(
+        { cacheKey, notifiedProposals: Array.from(notifiedProposalsSet) },
+        'Updating cache with notified proposals.',
+      )
+      await setCache(cacheKey, Array.from(notifiedProposalsSet))
+    }
   } catch (error) {
     if (error instanceof Error) {
       logger.error(
@@ -110,36 +174,14 @@ async function handleVotingProposals() {
 }
 
 /**
- * Handles notifications for ending proposals.
  *
- * This method fetches proposals that are nearing their end and notifies followers
- * who are associated with the DAOs of these proposals. It fetches the proposals ending
- * within one day, retrieves the followers and their associated Ethereum addresses,
- * and then sends notifications to those followers for proposals that match their DAOs.
- *
- * Caches the most recent time when proposals were retrieved and updates this cache upon
- * successful processing.
- * @returns A promise that resolves when the method has completed execution.
  */
 async function handleEndingProposals() {
+  const nowDateTime = DateTime.now()
   try {
-    const nowDateTime = DateTime.now()
-    logger.debug({ nowDateTime }, 'Current date and time retrieved')
-    const timeCacheKey = 'proposals_end_time'
-    let proposalsTime =
-      (await getCache<number | null>(timeCacheKey)) ??
-      nowDateTime.minus({ days: 1 }).toUnixInteger()
-    logger.debug(
-      { proposalsTime },
-      'Proposals time retrieved from cache or set to default',
-    )
-
     // Fetch proposals ending within one day from the last recorded proposalsTime
     const { proposals } = await getActiveProposals()
-    logger.info(
-      { proposalsTime, proposals },
-      'Ending proposals fetched successfully',
-    )
+    logger.info({ proposals }, 'Ending proposals fetched successfully')
 
     if (proposals.length === 0) {
       logger.warn('No active ending proposals found, terminating execution.')
@@ -284,10 +326,6 @@ async function handleEndingProposals() {
       ),
     )
     logger.debug('Notified proposals map cache updated successfully')
-
-    proposalsTime = nowDateTime.toUnixInteger()
-    await setCache(timeCacheKey, proposalsTime)
-    logger.info({ proposalsTime }, 'Proposals end time cached successfully')
   } catch (error) {
     if (error instanceof Error) {
       logger.error(
@@ -309,5 +347,8 @@ async function handleEndingProposals() {
  * @returns A promise that resolves when all notifications have been handled.
  */
 export async function handleActiveProposals() {
-  await Promise.all([handleVotingProposals(), handleEndingProposals()])
+  // await Promise.all([
+  await handleVotingProposals()
+  // handleEndingProposals()
+  // ])
 }
