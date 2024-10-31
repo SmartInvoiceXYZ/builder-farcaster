@@ -1,3 +1,4 @@
+import { endpoints } from '@/services/builder/index'
 import { Env, Owner } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { JsonObject } from 'type-fest'
@@ -27,12 +28,6 @@ export const getDAOsTokenOwners = async (
   first = 1000,
 ): Promise<Result> => {
   let allOwners: Owner[] = []
-  const endpoints = [
-    env.BUILDER_SUBGRAPH_ETHEREUM_URL,
-    env.BUILDER_SUBGRAPH_BASE_URL,
-    env.BUILDER_SUBGRAPH_OPTIMISM_URL,
-    env.BUILDER_SUBGRAPH_ZORA_URL,
-  ]
 
   const query = gql`
     query GetDAOTokenOwners($skip: Int!, $first: Int!) {

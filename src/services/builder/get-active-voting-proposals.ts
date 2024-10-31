@@ -1,3 +1,4 @@
+import { endpoints } from '@/services/builder/index'
 import { Env, Proposal } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { flatMap, pipe, uniqueBy } from 'remeda'
@@ -44,13 +45,6 @@ export const getActiveVotingProposals = async (
       }
     }
   `
-
-  const endpoints = [
-    env.BUILDER_SUBGRAPH_ETHEREUM_URL,
-    env.BUILDER_SUBGRAPH_BASE_URL,
-    env.BUILDER_SUBGRAPH_OPTIMISM_URL,
-    env.BUILDER_SUBGRAPH_ZORA_URL,
-  ]
 
   try {
     const proposalsPromises = endpoints.map(async (endpoint) => {
