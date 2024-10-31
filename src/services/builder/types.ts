@@ -5,10 +5,16 @@ export interface Env {
   BUILDER_SUBGRAPH_ZORA_URL: string
 }
 
+export interface Chain {
+  id: number
+  name: string
+}
+
 export interface Dao {
   id: string
   name: string
   ownerCount: number
+  chain: Chain
 }
 
 export interface Owner {
