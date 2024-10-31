@@ -1,6 +1,5 @@
 // Constants
 import { getCache, setCache } from '@/cache'
-import { env } from '@/config'
 import {
   getFollowerAddresses,
   getFollowerDAOs,
@@ -9,8 +8,7 @@ import {
 } from '@/handlers/index'
 import { logger } from '@/logger'
 import { addToQueue } from '@/queue'
-import { getActiveEndingProposals } from '@/services/builder/get-active-ending-proposals'
-import { getActiveVotingProposals } from '@/services/builder/get-active-voting-proposals'
+import { getActiveProposals } from '@/services/builder/get-active-proposals'
 import { DateTime } from 'luxon'
 import { filter, last, map, pipe } from 'remeda'
 import { JsonValue } from 'type-fest'
@@ -38,7 +36,7 @@ async function handleVotingProposals() {
       (await getCache<number | null>(timeCacheKey)) ??
       nowDateTime.minus({ days: 3 }).toUnixInteger()
 
-    const { proposals } = await getActiveVotingProposals(env, proposalsTime)
+    const { proposals } = await getActiveProposals()
 
     // Filter proposals that have voteStart before now
     const filteredProposals = proposals.filter(
@@ -137,7 +135,7 @@ async function handleEndingProposals() {
     )
 
     // Fetch proposals ending within one day from the last recorded proposalsTime
-    const { proposals } = await getActiveEndingProposals(env, proposalsTime)
+    const { proposals } = await getActiveProposals()
     logger.info(
       { proposalsTime, proposals },
       'Ending proposals fetched successfully',
