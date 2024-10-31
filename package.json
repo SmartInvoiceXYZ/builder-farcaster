@@ -18,6 +18,9 @@
     "pretest": "pnpm build",
     "test": "vitest run --passWithNoTests"
   },
+  "resolutions": {
+    "elliptic": ">=6.6.0"
+  },
   "dependencies": {
     "@prisma/client": "5.21.1",
     "commander": "12.1.0",

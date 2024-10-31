@@ -1,5 +1,5 @@
 import { chainEndpoints } from '@/services/builder/index'
-import { Env, Proposal } from '@/services/builder/types'
+import { Proposal } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { flatMap, pipe, uniqueBy } from 'remeda'
 import { JsonObject } from 'type-fest'
@@ -12,20 +12,15 @@ interface Result {
   proposals: Proposal[]
 }
 
-export const getActiveEndingProposals = async (
-  env: Env,
-  time: number,
-): Promise<Result> => {
+export const getActiveProposals = async (): Promise<Result> => {
   const query = gql`
     {
       proposals(
         skip: 0
         first: 100
-        orderBy: voteEnd
+        orderBy: timeCreated
         orderDirection: asc
         where: {
-          voteEnd_gte: ${time}
-          voteEnd_lte: ${time + 86400}
           queued: false
           executed: false
           canceled: false
