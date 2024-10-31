@@ -33,7 +33,7 @@ async function handleVotingProposals() {
         'Evaluating proposal voting time.',
       )
       return (
-        voteStartTimestamp > currentUnixTimestamp &&
+        voteStartTimestamp < currentUnixTimestamp &&
         voteEndTimestamp > currentUnixTimestamp
       )
     })
