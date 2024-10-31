@@ -1,4 +1,4 @@
-import { endpoints } from '@/services/builder/index'
+import { chainEndpoints } from '@/services/builder/index'
 import { Env, Owner } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { JsonObject } from 'type-fest'
@@ -51,7 +51,7 @@ export const getDAOsTokenOwners = async (
   `
 
   try {
-    for (const endpoint of endpoints) {
+    for (const { chain, endpoint } of chainEndpoints) {
       let currentSkip = skip
       let hasMore = true
       while (hasMore) {
@@ -64,7 +64,16 @@ export const getDAOsTokenOwners = async (
         if (owners.length === 0) {
           hasMore = false
         } else {
-          allOwners = [...allOwners, ...owners]
+          allOwners = [
+            ...allOwners,
+            ...(owners.map((owner) => ({
+              ...owner,
+              dao: {
+                ...owner.dao,
+                chain,
+              },
+            })) as Owner[]),
+          ]
           currentSkip += owners.length
         }
       }

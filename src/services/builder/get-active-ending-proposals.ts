@@ -1,4 +1,4 @@
-import { endpoints } from '@/services/builder/index'
+import { chainEndpoints } from '@/services/builder/index'
 import { Env, Proposal } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { flatMap, pipe, uniqueBy } from 'remeda'
@@ -48,11 +48,19 @@ export const getActiveEndingProposals = async (
   `
 
   try {
-    const proposalsPromises = endpoints.map(async (endpoint) => {
-      const client = new GraphQLClient(endpoint)
-      const response = await client.request<Data>(query)
-      return response.proposals
-    })
+    const proposalsPromises = chainEndpoints.map(
+      async ({ chain, endpoint }) => {
+        const client = new GraphQLClient(endpoint)
+        const response = await client.request<Data>(query)
+        return response.proposals.map((proposal) => ({
+          ...proposal,
+          dao: {
+            ...proposal.dao,
+            chain,
+          },
+        }))
+      },
+    )
 
     const results = await Promise.all(proposalsPromises)
     const uniqueProposals = pipe(
