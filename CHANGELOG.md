@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.32] - 2024-10-31
+
+### 🐛 Bug Fixes
+
+- *(proposals-handlers)* Filter active proposals by vote start date
+
+### 🚜 Refactor
+
+- *(builder)* Extract and centralize endpoint variables
+- *(builder)* Add chain info to endpoints and daos
+- *(services)* Unify proposal fetching methods
+- *(handlers)* Streamline voting proposals notification
+- *(proposals-handlers)* Streamline ending proposals handling
+
+### ⚙️ Miscellaneous Tasks
+
+- *(package)* Add resolution for elliptic dependency
+
 ## [1.0.0-alpha.31] - 2024-10-30
 
 ### ◀️ Revert
