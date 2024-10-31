@@ -1,6 +1,6 @@
 {
   "name": "builder-farcaster",
-  "version": "1.0.0-alpha.31",
+  "version": "1.0.0-alpha.32",
   "description": "Tools and automation solutions for Builder DAO on Farcaster, enhancing community efficiency and engagement.",
   "type": "module",
   "scripts": {
@@ -17,6 +17,9 @@
     "prisma:migrate": "prisma migrate deploy",
     "pretest": "pnpm build",
     "test": "vitest run --passWithNoTests"
+  },
+  "resolutions": {
+    "elliptic": ">=6.6.0"
   },
   "dependencies": {
     "@prisma/client": "5.21.1",

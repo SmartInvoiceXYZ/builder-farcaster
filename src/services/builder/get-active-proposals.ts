@@ -1,4 +1,5 @@
-import { Env, Proposal } from '@/services/builder/types'
+import { chainEndpoints } from '@/services/builder/index'
+import { Proposal } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { flatMap, pipe, uniqueBy } from 'remeda'
 import { JsonObject } from 'type-fest'
@@ -11,20 +12,15 @@ interface Result {
   proposals: Proposal[]
 }
 
-export const getActiveEndingProposals = async (
-  env: Env,
-  time: number,
-): Promise<Result> => {
+export const getActiveProposals = async (): Promise<Result> => {
   const query = gql`
     {
       proposals(
         skip: 0
         first: 100
-        orderBy: voteEnd
+        orderBy: timeCreated
         orderDirection: asc
         where: {
-          voteEnd_gte: ${time}
-          voteEnd_lte: ${time + 86400}
           queued: false
           executed: false
           canceled: false
@@ -46,19 +42,20 @@ export const getActiveEndingProposals = async (
     }
   `
 
-  const endpoints = [
-    env.BUILDER_SUBGRAPH_ETHEREUM_URL,
-    env.BUILDER_SUBGRAPH_BASE_URL,
-    env.BUILDER_SUBGRAPH_OPTIMISM_URL,
-    env.BUILDER_SUBGRAPH_ZORA_URL,
-  ]
-
   try {
-    const proposalsPromises = endpoints.map(async (endpoint) => {
-      const client = new GraphQLClient(endpoint)
-      const response = await client.request<Data>(query)
-      return response.proposals
-    })
+    const proposalsPromises = chainEndpoints.map(
+      async ({ chain, endpoint }) => {
+        const client = new GraphQLClient(endpoint)
+        const response = await client.request<Data>(query)
+        return response.proposals.map((proposal) => ({
+          ...proposal,
+          dao: {
+            ...proposal.dao,
+            chain,
+          },
+        }))
+      },
+    )
 
     const results = await Promise.all(proposalsPromises)
     const uniqueProposals = pipe(
