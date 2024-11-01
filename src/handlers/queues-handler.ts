@@ -1,6 +1,7 @@
 import { env } from '@/config'
 import { logger } from '@/logger'
 import { completeTask, retryTask } from '@/queue'
+import { Dao, Proposal } from '@/services/builder/types'
 import { sendDirectCast } from '@/services/warpcast/send-direct-cast'
 import { isPast, toRelativeTime } from '@/utils'
 import { PrismaClient } from '@prisma/client'
@@ -13,28 +14,12 @@ type TaskData = {
 
 interface NotificationData {
   recipient: number
-  proposal: {
-    id: string
-    proposalNumber: number
-    dao: {
-      id: string
-      name: string
-    }
-    title: string
-    proposer: string
-    timeCreated: string
-    voteStart: string
-    voteEnd: string
-  }
+  proposal: Proposal
 }
 
 interface InvitationData {
   recipient: number
-  daos: {
-    id: string
-    name: string
-    ownerCount: number
-  }[]
+  daos: Dao[]
 }
 
 /**
@@ -48,7 +33,9 @@ async function handleNotification(taskId: string, data: NotificationData) {
     const { recipient, proposal } = data
     const proposalNumber = proposal.proposalNumber.toString()
     const proposalTitle = proposal.title
+    const daoId = proposal.dao.id
     const daoName = proposal.dao.name
+    const chainName = proposal.dao.chain.name.toLowerCase()
     const createdAt = Number(proposal.timeCreated)
     const votingStartsAt = Number(proposal.voteStart)
     const votingEndsAt = Number(proposal.voteEnd)
@@ -58,7 +45,8 @@ async function handleNotification(taskId: string, data: NotificationData) {
       `around ${toRelativeTime(createdAt)}. ` +
       `🗳️ Voting ${isPast(votingStartsAt) ? 'started' : 'starts'} ${toRelativeTime(votingStartsAt)} and ` +
       `${isPast(votingEndsAt) ? 'ended' : 'ends'} ${toRelativeTime(votingEndsAt)}. ` +
-      `🚀 Check it out for more details and participate in the voting process!`
+      `🚀 Check it out for more details and participate in the voting process!` +
+      `\n\nhttps://nouns.build/dao/${chainName}/${daoId}/vote/${proposalNumber}`
     const idempotencyKey = sha256(message).toString()
 
     const result = await sendDirectCast(env, recipient, message, idempotencyKey)
