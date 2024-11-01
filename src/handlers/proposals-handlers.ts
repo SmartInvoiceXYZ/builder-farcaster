@@ -331,13 +331,13 @@ async function handleEndingProposals() {
   }
 }
 /**
- * Handles notifications for both voting and ending proposals concurrently.
+ * Handles notifications for both voting and ending proposals sequentially.
  *
  * This function triggers notifications for proposals that are currently active.
- * It ensures that notifications for voting proposals and ending proposals are
- * processed at the same time using `Promise.all`.
- * @returns A promise that resolves when all notifications have been handled.
+ * It ensures that notifications for voting proposals are processed first, followed
+ * by ending proposals.
  */
 export async function handleActiveProposals() {
-  await Promise.all([handleVotingProposals(), handleEndingProposals()])
+  await handleVotingProposals()
+  await handleEndingProposals()
 }
