@@ -1,6 +1,7 @@
 import { env } from '@/config'
 import { logger } from '@/logger'
 import { completeTask, retryTask } from '@/queue'
+import { Dao, Proposal } from '@/services/builder/types'
 import { sendDirectCast } from '@/services/warpcast/send-direct-cast'
 import { isPast, toRelativeTime } from '@/utils'
 import { PrismaClient } from '@prisma/client'
@@ -13,28 +14,12 @@ type TaskData = {
 
 interface NotificationData {
   recipient: number
-  proposal: {
-    id: string
-    proposalNumber: number
-    dao: {
-      id: string
-      name: string
-    }
-    title: string
-    proposer: string
-    timeCreated: string
-    voteStart: string
-    voteEnd: string
-  }
+  proposal: Proposal
 }
 
 interface InvitationData {
   recipient: number
-  daos: {
-    id: string
-    name: string
-    ownerCount: number
-  }[]
+  daos: Dao[]
 }
 
 /**
