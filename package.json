@@ -1,6 +1,6 @@
 {
   "name": "builder-farcaster",
-  "version": "1.0.0-alpha.32",
+  "version": "1.0.0-alpha.33",
   "description": "Tools and automation solutions for Builder DAO on Farcaster, enhancing community efficiency and engagement.",
   "type": "module",
   "scripts": {
@@ -42,7 +42,7 @@
     "@types/crypto-js": "4.2.2",
     "@types/eslint__js": "8.42.3",
     "@types/luxon": "3.4.2",
-    "@types/node": "22.8.4",
+    "@types/node": "22.8.6",
     "@types/uuid": "10.0.0",
     "@typescript-eslint/parser": "8.12.2",
     "eslint": "9.13.0",
