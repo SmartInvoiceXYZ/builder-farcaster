@@ -1,6 +1,7 @@
 import { chainEndpoints } from '@/services/builder/index'
 import { Proposal } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
+import { DateTime } from 'luxon'
 import { flatMap, pipe, uniqueBy } from 'remeda'
 import { JsonObject } from 'type-fest'
 
@@ -13,6 +14,8 @@ interface Result {
 }
 
 export const getActiveProposals = async (): Promise<Result> => {
+  const currentTimeInSeconds = Math.floor(DateTime.now().toSeconds())
+
   const query = gql`
     {
       proposals(
@@ -21,6 +24,7 @@ export const getActiveProposals = async (): Promise<Result> => {
         orderBy: timeCreated
         orderDirection: asc
         where: {
+          voteEnd_gt: ${currentTimeInSeconds}
           queued: false
           executed: false
           canceled: false
