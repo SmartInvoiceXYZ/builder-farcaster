@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-alpha.35] - 2024-11-01
+
+### 🚀 Features
+
+- *(builder)* Filter active proposals by current time
+
+### 🚜 Refactor
+
+- *(proposals-handlers)* Process proposals notifications sequentially
+
 ## [1.0.0-alpha.34] - 2024-11-01
 
 ### 🚀 Features
