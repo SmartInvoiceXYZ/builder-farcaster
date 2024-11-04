@@ -1,10 +1,8 @@
 import { fetchRequest, HttpRequestMethod } from '@/services/warpcast/index'
 import { Env, User } from '@/services/warpcast/types'
-import { IntRange } from 'type-fest'
 
 interface Result {
   users: User[]
-  cursor?: string
 }
 
 interface Response {
@@ -17,21 +15,14 @@ interface Response {
 }
 
 /**
- * Retrieves followers of a user.
+ * Retrieves all followers of a user.
  * @param env - The environment variables containing access token and base URL.
  * @param fid - The ID of the user for whom to retrieve followers.
- * @param [cursor] - The cursor to paginate through the followers.
- * @param [limit] - The maximum number of followers to retrieve (default: 25).
- * @returns - A promise that resolves to an object containing the retrieved users and the current cursor.
+ * @returns - A promise that resolves to an object containing all retrieved users.
  */
-export const getFollowers = async (
-  env: Env,
-  fid: number,
-  cursor?: string,
-  limit: IntRange<1, 101> = 25,
-): Promise<Result> => {
+export const getFollowers = async (env: Env, fid: number): Promise<Result> => {
   const { WARPCAST_ACCESS_TOKEN: accessToken, WARPCAST_BASE_URL: baseUrl } = env
-  let newCursor = cursor ?? ''
+  let newCursor = ''
   let users: User[] = []
   let response: Response
 
@@ -39,7 +30,7 @@ export const getFollowers = async (
     const params = {
       fid: fid.toString(),
       cursor: newCursor,
-      limit: String(limit),
+      limit: '100',
     }
     response = await fetchRequest<Response>(
       baseUrl,
@@ -52,7 +43,7 @@ export const getFollowers = async (
     )
     users = [...users, ...response.result.users]
     newCursor = response.next ? response.next.cursor : ''
-  } while (response.next && users.length < limit)
+  } while (response.next)
 
-  return { users: users.slice(0, limit), cursor: newCursor }
+  return { users }
 }
