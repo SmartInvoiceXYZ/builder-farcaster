@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-beta.0] - 2024-11-04
+
+### 🚜 Refactor
+
+- *(warpcast)* Simplify `getFollowers` method
+
 ## [1.0.0-alpha.35] - 2024-11-01
 
 ### 🚀 Features
