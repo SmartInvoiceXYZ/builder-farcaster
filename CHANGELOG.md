@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.5] - 2024-11-10
+
+### 🚜 Refactor
+
+- *(logger)* Simplify and extend logger configuration
+
 ## [1.0.4] - 2024-11-10
 
 ### 📚 Documentation
