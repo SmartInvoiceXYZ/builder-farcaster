@@ -27,7 +27,7 @@ jobs:
       - name: Read Package Version
         run: |
           version=$(jq -r .version package.json)
-          echo "version=$version" >> $GITHUB_ENV
+          echo "version=v${version}" >> $GITHUB_ENV
 
       # Set up Node.js and PNPM environment
       - name: Setup Node.js
