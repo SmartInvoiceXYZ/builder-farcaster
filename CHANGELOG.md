@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2024-11-10
+
+### ⚙️ Miscellaneous Tasks
+
+- *(build)* Update `DATABASE_URL` environment variable source
+
 ## [1.0.0] - 2024-11-10
 
 ### ⚙️ Miscellaneous Tasks
