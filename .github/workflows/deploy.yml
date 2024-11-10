@@ -2,11 +2,11 @@ name: Deploy & Publish
 
 env:
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  REMOTE_HOST_NAME: ${{ secrets.REMOTE_HOST_NAME }}
-  REMOTE_HOST_USER: ${{ secrets.REMOTE_HOST_USER }}
-  REMOTE_HOST_PATH: ${{ secrets.REMOTE_HOST_PATH }}
-  REMOTE_HOST_NODE: ${{ secrets.REMOTE_HOST_NODE }}
-  REMOTE_HOST_PNPM: ${{ secrets.REMOTE_HOST_PNPM }}
+  REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
+  REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
+  REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
+  REMOTE_HOST_NODE: ${{ vars.REMOTE_HOST_NODE }}
+  REMOTE_HOST_PNPM: ${{ vars.REMOTE_HOST_PNPM }}
   CURRENT_REFERENCE: ${{ github.ref_name }}
 
 on:
