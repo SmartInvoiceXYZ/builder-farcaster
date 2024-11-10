@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-beta.3] - 2024-11-10
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Update variable to `PACKAGE_VERSION` for clarity
+- *(deploy)* Improve pnpm cache handling in GitHub Actions
+- *(deploy)* Remove manual trigger from deployment workflow
+
 ## [1.0.0-beta.2] - 2024-11-10
 
 ### 🚜 Refactor
