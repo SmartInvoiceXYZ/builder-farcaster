@@ -12,6 +12,12 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
+      REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
+      REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
+      REMOTE_HOST_NODE: ${{ vars.REMOTE_HOST_NODE }}
+      REMOTE_HOST_PNPM: ${{ vars.REMOTE_HOST_PNPM }}
     steps:
       # Check out current repository
       - name: Fetch Sources
@@ -27,7 +33,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4.1.0
         with:
-          node-version: '20.x' # Ensure compatibility
+          node-version: '20.x'
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v4.0.0
@@ -35,7 +41,7 @@ jobs:
           version: '9.x'
           run_install: false
 
-      # Cache the PNPM store to speed up dependency installation
+      # Cache the PNPM store
       - name: Cache PNPM Store
         id: pnpm-cache
         uses: actions/cache@v4.1.2
@@ -45,7 +51,7 @@ jobs:
           restore-keys: |
             pnpm-store-${{ runner.os }}-
 
-      # Create .env file from GitHub secrets to use in the project
+      # Create .env file
       - name: Create .env File
         run: |
           cat <<EOF > .env
@@ -60,9 +66,9 @@ jobs:
           WARPCAST_ACCESS_TOKEN=${{ secrets.WARPCAST_ACCESS_TOKEN }}
           EOF
 
-      # Install dependencies using PNPM
+      # Install dependencies
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile # Ensures only exact lock file versions are used
+        run: pnpm install --frozen-lockfile
 
       # Build the application
       - name: Build Application
@@ -76,11 +82,6 @@ jobs:
 
       # Deploy the application to the remote server
       - name: Deploy to Server
-        env:
-          REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
-          REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
-          REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
-          CURRENT_REFERENCE: ${{ env.version }}
         run: |
           ssh -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
@@ -101,15 +102,8 @@ jobs:
             ./ \
             ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }}:${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
 
-      # Install dependencies on the server and run Prisma migrations
+      # Install dependencies and run Prisma migrations on the server
       - name: Install Server Dependencies
-        env:
-          REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
-          REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
-          REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
-          REMOTE_HOST_NODE: ${{ vars.REMOTE_HOST_NODE }}
-          REMOTE_HOST_PNPM: ${{ vars.REMOTE_HOST_PNPM }}
-          CURRENT_REFERENCE: ${{ env.version }}
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             cp -av ${{ env.REMOTE_HOST_PATH }}/prisma/{*.db,*.db-journal} \
@@ -122,13 +116,8 @@ jobs:
             ${{ env.REMOTE_HOST_PNPM }} prisma generate
           EOF
 
-      # Update the current release symlink to point to the new release
+      # Update the current release symlink to point to the new release atomically
       - name: Update Current Release
-        env:
-          REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
-          REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
-          REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
-          CURRENT_REFERENCE: ${{ env.version }}
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             ln -sfn ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }} # Create or update the symlink atomically
@@ -136,11 +125,6 @@ jobs:
 
       # Set up crontab tasks for background processes
       - name: Set Up Crontab Tasks
-        env:
-          REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
-          REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
-          REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
-          REMOTE_HOST_NODE: ${{ vars.REMOTE_HOST_NODE }}
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             crontab -r # Remove existing crontab tasks
