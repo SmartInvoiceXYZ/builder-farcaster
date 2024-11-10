@@ -3,7 +3,6 @@ name: Deploy & Publish
 on:
   release:
     types: [published]
-  workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
   deploy:
