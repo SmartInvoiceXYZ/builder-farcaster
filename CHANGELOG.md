@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-beta.2] - 2024-11-10
+
+### 🚜 Refactor
+
+- *(config)* Migrate prettier config to `prettier.config.mjs`
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Switch from secrets to vars for deployment
+- *(deploy)* Simplify and streamline deploy workflow
+- *(deploy)* Streamline deploy process and add manual trigger
+- *(deploy)* Move environment variables to job-level definition
+- *(deploy)* Prevent creation of existing directories
+- *(deploy)* Add `v` prefix to version in GitHub env
+
 ## [1.0.0-beta.1] - 2024-11-10
 
 ### 🐛 Bug Fixes

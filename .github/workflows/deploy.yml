@@ -27,7 +27,7 @@ jobs:
       - name: Read Package Version
         run: |
           version=$(jq -r .version package.json)
-          echo "version=$version" >> $GITHUB_ENV
+          echo "version=v${version}" >> $GITHUB_ENV
 
       # Set up Node.js and PNPM environment
       - name: Setup Node.js
@@ -84,7 +84,12 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
+            if [ -d "${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}" ]; then
+              echo "Error: Directory ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} already exists." >&2
+              exit 1
+            else
+              mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
+            fi
           EOF
 
           # Remove SQLite database files
