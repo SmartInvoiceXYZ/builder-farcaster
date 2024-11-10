@@ -11,12 +11,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    env:
-      REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
-      REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
-      REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
-      REMOTE_HOST_NODE: ${{ vars.REMOTE_HOST_NODE }}
-      REMOTE_HOST_PNPM: ${{ vars.REMOTE_HOST_PNPM }}
     steps:
       # Check out current repository
       - name: Fetch Sources
@@ -86,12 +80,12 @@ jobs:
       # Deploy the application to the remote server
       - name: Deploy to Server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            if [ -d "${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}" ]; then
-              echo "Error: Directory ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }} already exists." >&2
+          ssh -o StrictHostKeyChecking=no ${{ vars.REMOTE_HOST_USER }}@${{ vars.REMOTE_HOST_NAME }} <<EOF
+            if [ -d "${{ vars.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}" ]; then
+              echo "Error: Directory ${{ vars.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }} already exists." >&2
               exit 1
             else
-              mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}/logs
+              mkdir -pv ${{ vars.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}/logs
             fi
           EOF
 
@@ -108,37 +102,37 @@ jobs:
             --include='LICENSE' \
             --exclude='*' \
             ./ \
-            ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }}:${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}
+            ${{ vars.REMOTE_HOST_USER }}@${{ vars.REMOTE_HOST_NAME }}:${{ vars.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}
 
       # Install dependencies and run Prisma migrations on the server
       - name: Install Server Dependencies
         run: |
-          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            cp -av ${{ env.REMOTE_HOST_PATH }}/prisma/{*.db,*.db-journal} \
-              ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}/prisma/
+          ssh ${{ vars.REMOTE_HOST_USER }}@${{ vars.REMOTE_HOST_NAME }} <<EOF
+            cp -av ${{ vars.REMOTE_HOST_PATH }}/prisma/{*.db,*.db-journal} \
+              ${{ vars.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}/prisma/
 
-            cd ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}
-            ${{ env.REMOTE_HOST_NODE }} --version
-            ${{ env.REMOTE_HOST_PNPM }} install --prod
-            ${{ env.REMOTE_HOST_PNPM }} prisma migrate deploy
-            ${{ env.REMOTE_HOST_PNPM }} prisma generate
+            cd ${{ vars.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}
+            ${{ vars.REMOTE_HOST_NODE }} --version
+            ${{ vars.REMOTE_HOST_PNPM }} install --prod
+            ${{ vars.REMOTE_HOST_PNPM }} prisma migrate deploy
+            ${{ vars.REMOTE_HOST_PNPM }} prisma generate
           EOF
 
       # Update the current release symlink to point to the new release atomically
       - name: Update Current Release
         run: |
-          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            ln -sfn ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }} ${{ env.REMOTE_HOST_PATH }} # Create or update the symlink atomically
+          ssh ${{ vars.REMOTE_HOST_USER }}@${{ vars.REMOTE_HOST_NAME }} <<EOF
+            ln -sfn ${{ vars.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }} ${{ vars.REMOTE_HOST_PATH }} # Create or update the symlink atomically
           EOF
 
       # Set up crontab tasks for background processes
       - name: Set Up Crontab Tasks
         run: |
-          ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
+          ssh ${{ vars.REMOTE_HOST_USER }}@${{ vars.REMOTE_HOST_NAME }} <<EOF
             crontab -r # Remove existing crontab tasks
             # Add crontab tasks to process proposals and consume queues
-            echo "0 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js process proposals >> logs/process_proposals.log 2>&1" >> cron_jobs.txt
-            echo "* * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js queues consume -l 10 >> logs/consume_queues.log 2>&1" >> cron_jobs.txt
+            echo "0 * * * * cd ${{ vars.REMOTE_HOST_PATH }} && ${{ vars.REMOTE_HOST_NODE }} dist/index.js process proposals >> logs/process_proposals.log 2>&1" >> cron_jobs.txt
+            echo "* * * * * cd ${{ vars.REMOTE_HOST_PATH }} && ${{ vars.REMOTE_HOST_NODE }} dist/index.js queues consume -l 10 >> logs/consume_queues.log 2>&1" >> cron_jobs.txt
             crontab cron_jobs.txt
             rm -f cron_jobs.txt
           EOF
