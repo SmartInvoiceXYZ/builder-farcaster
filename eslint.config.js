@@ -11,7 +11,7 @@ import typescriptEslint from 'typescript-eslint'
 export default typescriptEslint.config(
   {
     // config with just ignores is the replacement for `.eslintignore`
-    ignores: ['**/build/**', '**/dist/**', 'vite.config.ts'],
+    ignores: ['**/build/**', '**/dist/**', '*.config.{js,mjs,ts}'],
   },
   javascriptEslint.configs.recommended,
   eslintPluginJsdoc.configs['flat/recommended-typescript-error'],
