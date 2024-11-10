@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2024-11-10
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deploy)* Update from secrets to vars for workflow env
+- *(deploy)* Switch from `env` to `vars` for remote config
+
 ## [1.0.0-beta.3] - 2024-11-10
 
 ### ⚙️ Miscellaneous Tasks
