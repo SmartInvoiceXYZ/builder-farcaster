@@ -3,7 +3,6 @@ name: Deploy & Publish
 on:
   release:
     types: [published]
-  workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
   deploy:
@@ -27,7 +26,7 @@ jobs:
       - name: Read Package Version
         run: |
           version=$(jq -r .version package.json)
-          echo "version=v${version}" >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=v${version}" >> $GITHUB_ENV
 
       # Set up Node.js and PNPM environment
       - name: Setup Node.js
@@ -42,14 +41,18 @@ jobs:
           run_install: false
 
       # Cache the PNPM store
-      - name: Cache PNPM Store
+      - name: Capture pnpm store directory
         id: pnpm-cache
-        uses: actions/cache@v4.1.2
+        run: |
+          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm Store
+        uses: actions/cache@v4.1.2 # Action provides caching dependencies and build outputs to improve workflow execution time.
         with:
-          path: $(pnpm store path)
-          key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }} # The path of the directory to cache.
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }} # An explicit key for restoring and saving the cache.
           restore-keys: |
-            pnpm-store-${{ runner.os }}-
+            ${{ runner.os }}-pnpm-store-
 
       # Create .env file
       - name: Create .env File
@@ -84,11 +87,11 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            if [ -d "${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}" ]; then
-              echo "Error: Directory ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} already exists." >&2
+            if [ -d "${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}" ]; then
+              echo "Error: Directory ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }} already exists." >&2
               exit 1
             else
-              mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
+              mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}/logs
             fi
           EOF
 
@@ -105,16 +108,16 @@ jobs:
             --include='LICENSE' \
             --exclude='*' \
             ./ \
-            ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }}:${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
+            ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }}:${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}
 
       # Install dependencies and run Prisma migrations on the server
       - name: Install Server Dependencies
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             cp -av ${{ env.REMOTE_HOST_PATH }}/prisma/{*.db,*.db-journal} \
-              ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/prisma/
+              ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}/prisma/
 
-            cd ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
+            cd ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }}
             ${{ env.REMOTE_HOST_NODE }} --version
             ${{ env.REMOTE_HOST_PNPM }} install --prod
             ${{ env.REMOTE_HOST_PNPM }} prisma migrate deploy
@@ -125,7 +128,7 @@ jobs:
       - name: Update Current Release
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            ln -sfn ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }} # Create or update the symlink atomically
+            ln -sfn ${{ env.REMOTE_HOST_PATH }}~${{ env.PACKAGE_VERSION }} ${{ env.REMOTE_HOST_PATH }} # Create or update the symlink atomically
           EOF
 
       # Set up crontab tasks for background processes
