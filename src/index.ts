@@ -1,8 +1,8 @@
+import { handleInvites } from '@/handlers/invites-handler'
 import { handleActiveProposals } from '@/handlers/proposals-handlers'
 import { consumeQueue } from '@/handlers/queues-handler'
 import { Command } from 'commander'
 import packageJson from '../package.json'
-import { handleInvites } from '@/handlers/invites-handler'
 
 // Create a new Command instance for the CLI tool
 const program = new Command()
@@ -46,6 +46,19 @@ queueCommand
   )
   .action(async ({ limit }: { limit: number }) => {
     await consumeQueue(limit)
+  })
+
+// Register the 'warpcast' command
+const warpcastCommand = program
+  .command('warpcast')
+  .description('Warpcast related commands')
+
+// Register the 'token' sub-command under 'warpcast'
+warpcastCommand
+  .command('token')
+  .description('Token related operations')
+  .action(() => {
+    console.log('Token subcommand executed')
   })
 
 // Parse the command-line arguments to execute appropriate commands
