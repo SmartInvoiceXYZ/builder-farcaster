@@ -17,6 +17,8 @@ jobs:
   build: # Job named 'build'
     name: Build & Test
     runs-on: ubuntu-latest # The type of machine to run the job on.
+    env:
+      DATABASE_URL: ${{ vars.DATABASE_URL }}
 
     steps: # The sequence of tasks that make up a job.
       - name: Checking out repository code
@@ -54,8 +56,6 @@ jobs:
       # This compiles the application in optimized production mode and output it to the build folder.
       - name: Build the application and export it
         run: pnpm run build
-        env:
-          DATABASE_URL: ${{ vars.DATABASE_URL }}
 
       # Runs unit tests for the application using Jest.
       - name: Execute tests using Vitest
