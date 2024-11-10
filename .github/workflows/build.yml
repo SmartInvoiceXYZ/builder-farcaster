@@ -1,8 +1,5 @@
 name: Build Pipeline # A Build Pipeline which will use for build, test and deploy.
 
-env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
 on:
   push: # When we push the changes.
     branches: # Only for these branches.
@@ -57,6 +54,8 @@ jobs:
       # This compiles the application in optimized production mode and output it to the build folder.
       - name: Build the application and export it
         run: pnpm run build
+        env:
+          DATABASE_URL: ${{ vars.DATABASE_URL }}
 
       # Runs unit tests for the application using Jest.
       - name: Execute tests using Vitest
