@@ -1,17 +1,9 @@
 name: Deploy & Publish
 
-env:
-  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  REMOTE_HOST_NAME: ${{ secrets.REMOTE_HOST_NAME }}
-  REMOTE_HOST_USER: ${{ secrets.REMOTE_HOST_USER }}
-  REMOTE_HOST_PATH: ${{ secrets.REMOTE_HOST_PATH }}
-  REMOTE_HOST_NODE: ${{ secrets.REMOTE_HOST_NODE }}
-  REMOTE_HOST_PNPM: ${{ secrets.REMOTE_HOST_PNPM }}
-  CURRENT_REFERENCE: ${{ github.ref_name }}
-
 on:
   release:
     types: [published]
+  workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
   deploy:
@@ -20,36 +12,46 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
+      REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
+      REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
+      REMOTE_HOST_NODE: ${{ vars.REMOTE_HOST_NODE }}
+      REMOTE_HOST_PNPM: ${{ vars.REMOTE_HOST_PNPM }}
     steps:
       # Check out current repository
       - name: Fetch Sources
         uses: actions/checkout@v4.2.2
-        with:
-          ref: ${{ github.event.release.tag_name }} # Checkout the specific release tag
+
+      # Extract version from package
+      - name: Read Package Version
+        run: |
+          version=$(jq -r .version package.json)
+          echo "version=v${version}" >> $GITHUB_ENV
 
       # Set up Node.js and PNPM environment
       - name: Setup Node.js
         uses: actions/setup-node@v4.1.0
         with:
-          node-version: ^20 # Use Node.js version 20 or above to ensure compatibility with the project
+          node-version: '20.x'
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v4.0.0
         with:
-          version: ^9 # Use PNPM version 9 or above
-          run_install: false # Disable automatic installation to customize the installation process
+          version: '9.x'
+          run_install: false
 
-      # Cache the PNPM store to speed up dependency installation
+      # Cache the PNPM store
       - name: Cache PNPM Store
         id: pnpm-cache
         uses: actions/cache@v4.1.2
         with:
-          path: $(pnpm store path) # Cache the PNPM store directory
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }} # Unique cache key based on OS and lock file
+          path: $(pnpm store path)
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store- # Restore cache if an exact match is not found
+            pnpm-store-${{ runner.os }}-
 
-      # Create .env file from GitHub secrets to use in the project
+      # Create .env file
       - name: Create .env File
         run: |
           cat <<EOF > .env
@@ -62,29 +64,32 @@ jobs:
           WARPCAST_BASE_URL=${{ secrets.WARPCAST_BASE_URL }}
           WARPCAST_API_KEY=${{ secrets.WARPCAST_API_KEY }}
           WARPCAST_ACCESS_TOKEN=${{ secrets.WARPCAST_ACCESS_TOKEN }}
-          EOF # Generate the .env file with necessary environment variables
+          EOF
 
-      # Install dependencies using PNPM
+      # Install dependencies
       - name: Install Dependencies
-        run: pnpm install # Install project dependencies
+        run: pnpm install --frozen-lockfile
 
       # Build the application
       - name: Build Application
-        run: pnpm build # Compile the application for deployment
+        run: pnpm build
 
       # Set up SSH agent for secure connection to the server
       - name: Set Up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} # Use the SSH private key from GitHub secrets for authentication
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # Deploy the application to the remote server
       - name: Deploy to Server
         run: |
-          # Create a new directory for the current release on the server
           ssh -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
-            mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
+            if [ -d "${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}" ]; then
+              echo "Error: Directory ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} already exists." >&2
+              exit 1
+            else
+              mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
+            fi
           EOF
 
           # Remove SQLite database files
@@ -102,7 +107,7 @@ jobs:
             ./ \
             ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }}:${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
 
-      # Install dependencies on the server and run Prisma migrations
+      # Install dependencies and run Prisma migrations on the server
       - name: Install Server Dependencies
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
@@ -110,18 +115,17 @@ jobs:
               ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/prisma/
 
             cd ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}
-            ${{ env.REMOTE_HOST_NODE }} --version # Verify Node.js version on the server
-            ${{ env.REMOTE_HOST_PNPM }} install --prod # Install production dependencies only
-            ${{ env.REMOTE_HOST_PNPM }} prisma migrate deploy # Run database migrations
-            ${{ env.REMOTE_HOST_PNPM }} prisma generate # Generate Prisma client
+            ${{ env.REMOTE_HOST_NODE }} --version
+            ${{ env.REMOTE_HOST_PNPM }} install --prod
+            ${{ env.REMOTE_HOST_PNPM }} prisma migrate deploy
+            ${{ env.REMOTE_HOST_PNPM }} prisma generate
           EOF
 
-      # Update the current release symlink to point to the new release
+      # Update the current release symlink to point to the new release atomically
       - name: Update Current Release
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
-            rm -fv ${{ env.REMOTE_HOST_PATH }} # Remove the existing symlink
-            ln -sv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }} # Create a new symlink to the current release
+            ln -sfn ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }} # Create or update the symlink atomically
           EOF
 
       # Set up crontab tasks for background processes
@@ -129,14 +133,13 @@ jobs:
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             crontab -r # Remove existing crontab tasks
-            # Add a crontab task to process proposals every hour
+            # Add crontab tasks to process proposals and consume queues
             echo "0 * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js process proposals >> logs/process_proposals.log 2>&1" >> cron_jobs.txt
-            # Add a crontab task to consume queues every minute
             echo "* * * * * cd ${{ env.REMOTE_HOST_PATH }} && ${{ env.REMOTE_HOST_NODE }} dist/index.js queues consume -l 10 >> logs/consume_queues.log 2>&1" >> cron_jobs.txt
-            crontab cron_jobs.txt # Update crontab with new tasks
-            rm -f cron_jobs.txt # Remove temporary crontab file
+            crontab cron_jobs.txt
+            rm -f cron_jobs.txt
           EOF
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.run_id }} # Ensure only one deployment is running per workflow
-  cancel-in-progress: true # Cancel any ongoing workflow if a new one starts
+  group: ${{ github.workflow }}-${{ github.run_id }}
+  cancel-in-progress: true
