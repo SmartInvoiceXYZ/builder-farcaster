@@ -58,13 +58,13 @@ jobs:
       - name: Create .env File
         run: |
           cat <<EOF > .env
-          NODE_ENV=${{ secrets.NODE_ENV }}
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          BUILDER_SUBGRAPH_ETHEREUM_URL=${{ secrets.BUILDER_SUBGRAPH_ETHEREUM_URL }}
-          BUILDER_SUBGRAPH_BASE_URL=${{ secrets.BUILDER_SUBGRAPH_BASE_URL }}
-          BUILDER_SUBGRAPH_OPTIMISM_URL=${{ secrets.BUILDER_SUBGRAPH_OPTIMISM_URL }}
-          BUILDER_SUBGRAPH_ZORA_URL=${{ secrets.BUILDER_SUBGRAPH_ZORA_URL }}
-          WARPCAST_BASE_URL=${{ secrets.WARPCAST_BASE_URL }}
+          NODE_ENV=${{ vars.NODE_ENV }}
+          DATABASE_URL=${{ vars.DATABASE_URL }}
+          BUILDER_SUBGRAPH_ETHEREUM_URL=${{ vars.BUILDER_SUBGRAPH_ETHEREUM_URL }}
+          BUILDER_SUBGRAPH_BASE_URL=${{ vars.BUILDER_SUBGRAPH_BASE_URL }}
+          BUILDER_SUBGRAPH_OPTIMISM_URL=${{ vars.BUILDER_SUBGRAPH_OPTIMISM_URL }}
+          BUILDER_SUBGRAPH_ZORA_URL=${{ vars.BUILDER_SUBGRAPH_ZORA_URL }}
+          WARPCAST_BASE_URL=${{ vars.WARPCAST_BASE_URL }}
           WARPCAST_API_KEY=${{ secrets.WARPCAST_API_KEY }}
           WARPCAST_ACCESS_TOKEN=${{ secrets.WARPCAST_ACCESS_TOKEN }}
           EOF
