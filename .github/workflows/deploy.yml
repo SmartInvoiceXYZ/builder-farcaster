@@ -1,17 +1,9 @@
 name: Deploy & Publish
 
-env:
-  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
-  REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
-  REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
-  REMOTE_HOST_NODE: ${{ vars.REMOTE_HOST_NODE }}
-  REMOTE_HOST_PNPM: ${{ vars.REMOTE_HOST_PNPM }}
-  CURRENT_REFERENCE: ${{ github.ref_name }}
-
 on:
   release:
     types: [published]
+  workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
   deploy:
@@ -24,8 +16,12 @@ jobs:
       # Check out current repository
       - name: Fetch Sources
         uses: actions/checkout@v4.2.2
-        with:
-          ref: ${{ github.event.release.tag_name }}
+
+      # Extract version from package
+      - name: Read Package Version
+        run: |
+          version=$(jq -r .version package.json)
+          echo "version=$version" >> $GITHUB_ENV
 
       # Set up Node.js and PNPM environment
       - name: Setup Node.js
@@ -80,6 +76,11 @@ jobs:
 
       # Deploy the application to the remote server
       - name: Deploy to Server
+        env:
+          REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
+          REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
+          REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
+          CURRENT_REFERENCE: ${{ env.version }}
         run: |
           ssh -o StrictHostKeyChecking=no ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             mkdir -pv ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }}/logs
@@ -102,6 +103,13 @@ jobs:
 
       # Install dependencies on the server and run Prisma migrations
       - name: Install Server Dependencies
+        env:
+          REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
+          REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
+          REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
+          REMOTE_HOST_NODE: ${{ vars.REMOTE_HOST_NODE }}
+          REMOTE_HOST_PNPM: ${{ vars.REMOTE_HOST_PNPM }}
+          CURRENT_REFERENCE: ${{ env.version }}
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             cp -av ${{ env.REMOTE_HOST_PATH }}/prisma/{*.db,*.db-journal} \
@@ -116,6 +124,11 @@ jobs:
 
       # Update the current release symlink to point to the new release
       - name: Update Current Release
+        env:
+          REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
+          REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
+          REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
+          CURRENT_REFERENCE: ${{ env.version }}
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             ln -sfn ${{ env.REMOTE_HOST_PATH }}~${{ env.CURRENT_REFERENCE }} ${{ env.REMOTE_HOST_PATH }} # Create or update the symlink atomically
@@ -123,6 +136,11 @@ jobs:
 
       # Set up crontab tasks for background processes
       - name: Set Up Crontab Tasks
+        env:
+          REMOTE_HOST_USER: ${{ vars.REMOTE_HOST_USER }}
+          REMOTE_HOST_NAME: ${{ vars.REMOTE_HOST_NAME }}
+          REMOTE_HOST_PATH: ${{ vars.REMOTE_HOST_PATH }}
+          REMOTE_HOST_NODE: ${{ vars.REMOTE_HOST_NODE }}
         run: |
           ssh ${{ env.REMOTE_HOST_USER }}@${{ env.REMOTE_HOST_NAME }} <<EOF
             crontab -r # Remove existing crontab tasks
