@@ -23,6 +23,7 @@
     "elliptic": ">=6.6.0"
   },
   "dependencies": {
+    "@inquirer/prompts": "7.0.1",
     "@prisma/client": "5.22.0",
     "commander": "12.1.0",
     "crypto-js": "4.2.0",
