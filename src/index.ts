@@ -1,3 +1,4 @@
+import { warpcastToken } from '@/commands/warpcast/token'
 import { handleInvites } from '@/handlers/invites-handler'
 import { handleActiveProposals } from '@/handlers/proposals-handlers'
 import { consumeQueue } from '@/handlers/queues-handler'
@@ -57,9 +58,7 @@ const warpcastCommand = program
 warpcastCommand
   .command('token')
   .description('Token related operations')
-  .action(() => {
-    console.log('Token subcommand executed')
-  })
+  .action(warpcastToken)
 
 // Parse the command-line arguments to execute appropriate commands
 program.parse(process.argv)
