@@ -22,7 +22,7 @@ export interface FetchResponse {
 /**
  * Performs a HTTP request to the specified path using the provided method and options.
  * @param baseUrl - The base URL to prepend to the path.
- * @param accessToken - The access token to include in the request headers.
+ * @param authToken - The auth token to include in the request headers.
  * @param method - The HTTP method to use for the request.
  * @param path - The path to append to the base URL for the request.
  * @param [options] - Additional options for the request.
@@ -30,7 +30,7 @@ export interface FetchResponse {
  */
 export async function fetchRequest<T>(
   baseUrl: string,
-  accessToken: string | undefined,
+  authToken: string | undefined,
   method: HttpRequestMethod,
   path: string,
   options?: FetchOptions,
@@ -42,7 +42,7 @@ export async function fetchRequest<T>(
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+      ...(authToken && { Authorization: `Bearer ${authToken}` }),
       ...options?.headers,
     },
     body:
