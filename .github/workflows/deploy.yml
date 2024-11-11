@@ -60,7 +60,7 @@ jobs:
           BUILDER_SUBGRAPH_ZORA_URL=${{ vars.BUILDER_SUBGRAPH_ZORA_URL }}
           WARPCAST_BASE_URL=${{ vars.WARPCAST_BASE_URL }}
           WARPCAST_API_KEY=${{ secrets.WARPCAST_API_KEY }}
-          WARPCAST_ACCESS_TOKEN=${{ secrets.WARPCAST_ACCESS_TOKEN }}
+          WARPCAST_AUTH_TOKEN=${{ secrets.WARPCAST_AUTH_TOKEN }}
           EOF
 
       # Install dependencies

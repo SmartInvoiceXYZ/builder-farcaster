@@ -10,11 +10,11 @@ interface Response {
 }
 
 export const getMe = async (env: Env): Promise<Result> => {
-  const { WARPCAST_ACCESS_TOKEN: accessToken, WARPCAST_BASE_URL: baseUrl } = env
+  const { WARPCAST_AUTH_TOKEN: authToken, WARPCAST_BASE_URL: baseUrl } = env
 
   const { result } = await fetchRequest<Response>(
     baseUrl,
-    accessToken,
+    authToken,
     HttpRequestMethod.GET,
     '/v2/me',
     {},

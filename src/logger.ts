@@ -1,6 +1,8 @@
 import pino, { Logger } from 'pino'
 
-const logLevel = process.env.NODE_ENV === 'development' ? 'debug' : 'info'
+const logLevel =
+  process.env.LOG_LEVEL ??
+  (process.env.NODE_ENV === 'development' ? 'debug' : 'info')
 
 export const logger: Logger = pino({
   level: logLevel,

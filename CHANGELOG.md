@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2024-11-11
+
+### 🚀 Features
+
+- *(logger)* Allow custom log level via env var
+- *(cli)* Add `warpcast` command with `token` sub-command
+- *(scripts)* Add `dev:tokengen` script
+- *(warpcast)* Add `genAuthToken` function to warpcast service
+- *(warpcast-token)* Add token generation command
+
+### 🚜 Refactor
+
+- *(warpcast)* Rename `WARPCAST_ACCESS_TOKEN` to `WARPCAST_AUTH_TOKEN`
+
 ## [1.0.5] - 2024-11-10
 
 ### 🚜 Refactor

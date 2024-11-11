@@ -94,7 +94,7 @@ Next, we will configure the environment variables and secrets for the repository
    ```bash
    gh secret set SSH_PRIVATE_KEY
    gh secret set WARPCAST_API_KEY
-   gh secret set WARPCAST_ACCESS_TOKEN
+   gh secret set WARPCAST_AUTH_TOKEN
    ```
 
    These commands will securely add environment variables and secrets to your GitHub repository.
