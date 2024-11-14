@@ -23,7 +23,7 @@
     "elliptic": ">=6.6.0"
   },
   "dependencies": {
-    "@inquirer/prompts": "7.0.1",
+    "@inquirer/prompts": "7.1.0",
     "@prisma/client": "5.22.0",
     "canonicalize": "2.0.0",
     "commander": "12.1.0",
