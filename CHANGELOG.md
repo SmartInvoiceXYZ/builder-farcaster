@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2024-11-15
+
+### 📚 Documentation
+
+- *(readme)* Update setup and deployment instructions
+
 ## [1.1.0] - 2024-11-11
 
 ### 🚀 Features
