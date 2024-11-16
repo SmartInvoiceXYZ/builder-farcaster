@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2024-11-16
+
+### 📚 Documentation
+
+- *(readme)* Remove setup and deployment instructions
+- *(deploy)* Add detailed deployment instructions
+- *(setup)* Add comprehensive setup instructions
+
 ## [1.1.1] - 2024-11-15
 
 ### 📚 Documentation
