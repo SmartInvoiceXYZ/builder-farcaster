@@ -125,7 +125,7 @@ async function handleInvitation(taskId: string, data: InvitationData) {
  * @param [limit] - Optional limit on the number of tasks to take from the queue.
  * @returns A promise that resolves when the queue processing is done.
  */
-export const consumeQueue = async (limit?: number) => {
+export const queueConsumeCommand = async (limit?: number) => {
   try {
     const prisma = new PrismaClient()
 
