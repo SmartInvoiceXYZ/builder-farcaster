@@ -1,7 +1,7 @@
+import { processProposalsCommand } from '@/commands/process/proposals'
 import { warpcastToken } from '@/commands/warpcast/token'
-import { handleInvites } from '@/handlers/invites-handler'
-import { handleActiveProposals } from '@/handlers/proposals-handlers'
-import { consumeQueue } from '@/handlers/queues-handler'
+import { processInvitesCommand } from '@/commands/process/invites'
+import { queueConsumeCommand } from '@/commands/queues/consume'
 import { Command } from 'commander'
 import packageJson from '../package.json'
 
@@ -23,13 +23,13 @@ const processCommand = program
 processCommand
   .command('proposals')
   .description('Process proposals from API and enqueue tasks')
-  .action(handleActiveProposals)
+  .action(processProposalsCommand)
 
 // Register the 'invites' sub-command under 'process'
 processCommand
   .command('invites')
   .description('Process invitations')
-  .action(handleInvites)
+  .action(processInvitesCommand)
 
 // Register the 'queues' command
 const queueCommand = program
@@ -46,7 +46,7 @@ queueCommand
     parseInt,
   )
   .action(async ({ limit }: { limit: number }) => {
-    await consumeQueue(limit)
+    await queueConsumeCommand(limit)
   })
 
 // Register the 'warpcast' command

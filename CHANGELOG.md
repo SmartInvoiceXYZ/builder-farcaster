@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3] - 2024-11-19
+
+### 🚜 Refactor
+
+- *(commands)* Rename handlers to commands for consistency
+
 ## [1.1.2] - 2024-11-16
 
 ### 📚 Documentation

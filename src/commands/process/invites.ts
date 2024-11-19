@@ -1,6 +1,6 @@
 import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
-import { CACHE_MAX_AGE_MS, getFollowerFids, getUserFid } from '@/handlers/index'
+import { CACHE_MAX_AGE_MS, getFollowerFids, getUserFid } from '@/commands'
 import { logger } from '@/logger'
 import { addToQueue } from '@/queue'
 import { getDAOsTokenOwners } from '@/services/builder/get-daos-token-owners'
@@ -24,7 +24,7 @@ import { JsonValue } from 'type-fest'
  * Handles invitations by fetching DAO owners, mapping them to their respective
  * FIDs, and creating an owner-to-DAO mapping.
  */
-export async function handleInvites() {
+export async function processInvitesCommand() {
   try {
     const sortedFidToDaoMap = await getSortedFidToDaoMap()
     logger.debug(

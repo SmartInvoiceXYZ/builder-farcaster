@@ -4,7 +4,7 @@ import {
   getFollowerDAOs,
   getFollowerFids,
   getUserFid,
-} from '@/handlers/index'
+} from '@/commands'
 import { logger } from '@/logger'
 import { addToQueue } from '@/queue'
 import { getActiveProposals } from '@/services/builder/get-active-proposals'
@@ -337,7 +337,7 @@ async function handleEndingProposals() {
  * It ensures that notifications for voting proposals are processed first, followed
  * by ending proposals.
  */
-export async function handleActiveProposals() {
+export async function processProposalsCommand() {
   await handleVotingProposals()
   await handleEndingProposals()
 }
