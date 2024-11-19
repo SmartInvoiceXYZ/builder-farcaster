@@ -45,7 +45,7 @@ async function handleNotification(taskId: string, data: NotificationData) {
       `around ${toRelativeTime(createdAt)}. ` +
       `🗳️ Voting ${isPast(votingStartsAt) ? 'started' : 'starts'} ${toRelativeTime(votingStartsAt)} and ` +
       `${isPast(votingEndsAt) ? 'ended' : 'ends'} ${toRelativeTime(votingEndsAt)}. ` +
-      `🚀 Check it out for more details and participate in the voting process!` +
+      `🚀🚀 Check it out for more details and participate in the voting process!` +
       `\n\nhttps://nouns.build/dao/${chainName}/${daoId}/vote/${proposalNumber}`
     const idempotencyKey = sha256(message).toString()
 
