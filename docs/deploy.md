@@ -1,6 +1,41 @@
 ## Deployment Instructions
 
-### Step 1: Branching Strategy
+### Branching and Versioning Strategy
+
+In this repository, we keep ongoing changes on the `develop` branch, which acts as our main integration branch. When
+changes are ready for production, we merge them into the `master` branch. Each merge to `master` is accompanied by a
+proper SemVer tag, and the version number is updated in the package file accordingly.
+
+Each time changes are pushed to the `master` branch under these conditions, a new GitHub release is generated. When you
+publish a GitHub release, it triggers another workflow that builds the project and pushes it to the deployment server
+using the secrets and variables provided during setup.
+
+In this repository, we use a combination of Git Flow and GitHub Flow to manage our branching strategy. Git Flow helps us
+structure our development process by using feature branches and releases, while GitHub Flow allows for a simplified
+workflow for quick changes and collaboration.
+
+For versioning, we follow Semantic Versioning (SemVer), which means version numbers follow the pattern
+`MAJOR.MINOR.PATCH` and increment based on backward-incompatible changes, new features, and bug fixes, respectively.
+
+By following these practices, we ensure a structured approach to development, testing, and releasing new versions of the
+software, which helps in maintaining quality and reliability throughout the project lifecycle.
+
+### Step 1: Set Environment Variables
+
+The following environment variables are set on GitHub for deployment purposes, based on the deployment server
+configuration. Use the `gh` command to set them:
+
+```bash
+gh variable set REMOTE_HOST_NAME --body "68.183.109.99"
+gh variable set REMOTE_HOST_NODE --body "/usr/bin/node"
+gh variable set REMOTE_HOST_PATH --body "/home/deploy/builder-farcaster"
+gh variable set REMOTE_HOST_PNPM --body "/usr/local/bin/pnpm"
+gh variable set REMOTE_HOST_USER --body "deploy"
+```
+
+Ensure these variables are configured correctly in the repository settings to guarantee smooth deployment.
+
+### Step 2: Branching Strategy
 
 1. **Create a Feature Branch**: Start by creating a feature branch from the `develop` branch. Use a descriptive branch
    name to make it easy to understand its purpose:
@@ -51,7 +86,7 @@
 6. **Update Version in Package File**: Update the version number in the `package.json` or equivalent package file before
    merging. This ensures consistency between the tagged version and the project metadata.
 
-### Step 2: GitHub Release
+### Step 3: GitHub Release
 
 1. **Generate Release**: Push the changes to the `master` branch. A GitHub release will automatically be generated from
    this push.
@@ -59,7 +94,7 @@
 2. **Publish the Release**: Navigate to the releases page in the GitHub repository, edit the release notes if needed,
    and click **Publish Release**. This makes the new version officially available for use and further deployment.
 
-### Step 3: Deployment Workflow
+### Step 4: Deployment Workflow
 
 1. **Deployment Trigger**: Publishing the GitHub release will trigger a deployment workflow. This is an automated
    process that starts as soon as a new release is published.
@@ -74,23 +109,3 @@
 3. **Verify Deployment**: Once deployed, verify the application is running as expected in the production environment.
    This may involve running some manual or automated tests to ensure everything is functioning correctly after the
    deployment.
-
-## Branching and Versioning Strategy
-
-In this repository, we keep ongoing changes on the `develop` branch, which acts as our main integration branch. When
-changes are ready for production, we merge them into the `master` branch. Each merge to `master` is accompanied by a
-proper SemVer tag, and the version number is updated in the package file accordingly.
-
-Each time changes are pushed to the `master` branch under these conditions, a new GitHub release is generated. When you
-publish a GitHub release, it triggers another workflow that builds the project and pushes it to the deployment server
-using the secrets and variables provided during setup.
-
-In this repository, we use a combination of Git Flow and GitHub Flow to manage our branching strategy. Git Flow helps us
-structure our development process by using feature branches and releases, while GitHub Flow allows for a simplified
-workflow for quick changes and collaboration.
-
-For versioning, we follow Semantic Versioning (SemVer), which means version numbers follow the pattern
-`MAJOR.MINOR.PATCH` and increment based on backward-incompatible changes, new features, and bug fixes, respectively.
-
-By following these practices, we ensure a structured approach to development, testing, and releasing new versions of the
-software, which helps in maintaining quality and reliability throughout the project lifecycle.
