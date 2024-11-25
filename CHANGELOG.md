@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.5] - 2024-11-25
+
+### 📚 Documentation
+
+- *(deploy)* Update deployment instructions and organize sections
+
 ## [1.1.4] - 2024-11-25
 
 ### 🐛 Bug Fixes
