@@ -87,13 +87,25 @@ Next, we will configure the environment variables and secrets for the repository
    ```
 
 2. Set the secrets using `gh` for sensitive information (Note: Secrets for Builder projects are available in the shared
-   vault. If you are using this setup for personal purposes, you can obtain your API KEY by following the instructions
-   here: [Public Programmable DCs v1](https://www.notion.so/warpcast/Public-Programmable-DCs-v1-50d9d99e34ac4d10add55bd26a91804f)):
+   vault:
 
+   * `WARPCAST_API_KEY` can be found under `Builder Bot  Farcaster` > `Direct Cast API Key`
+       * If you are using this setup for personal purposes, you can obtain your API KEY by following the instructions
+   here: [Public Programmable DCs v1](https://www.notion.so/warpcast/Public-Programmable-DCs-v1-50d9d99e34ac4d10add55bd26a91804f))
+   * `WARPCAST_AUTH_TOKEN` can be found under `Builder Bot  Farcaster` > `Warpcast Authentication Token`
+   
    ```bash
-   gh secret set SSH_PRIVATE_KEY
    gh secret set WARPCAST_API_KEY
    gh secret set WARPCAST_AUTH_TOKEN
+   ```
+
+   * A base64-encoded `SSH_PRIVATE_KEY` can be found under `Builder Farcaster Droplet (Deploy)` > `Private Key`
+       * to decode it, copy the text and run `pbpaste | base64 -d` in your local terminal (don't use online tools for this)
+       * sicne it's multiline, you can create a file called tmp and put the contents in there (including `-----BEGIN OPENSSH PRIVATE KEY-----` and `-----END OPENSSH PRIVATE KEY-----`
+
+   ```bash
+   gh secret set SSH_PRIVATE_KEY --body @tmp
+   rm tmp
    ```
 
    These commands will securely add environment variables and secrets to your GitHub repository. Properly setting these
