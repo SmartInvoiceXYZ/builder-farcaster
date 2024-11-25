@@ -30,7 +30,10 @@
 
    Release branches are meant for final preparation of a release, including testing and minor adjustments.
 
-4. **Merge into Master**: After testing, merge the release branch into the `master` branch:
+4. **Update Version in Package File**: Update the version number in the `package.json` or equivalent package file before
+   merging. This ensures consistency between the tagged version and the project metadata.
+
+5. **Merge into Master**: After testing, merge the release branch into the `master` branch:
 
    ```bash
    git checkout master
@@ -39,7 +42,7 @@
 
    The `master` branch is the production-ready branch and should always reflect the latest stable version of the code.
 
-5. **Tag the Release**: Tag the new version in line with Semantic Versioning (SemVer):
+6. **Tag the Release**: Tag the new version in line with Semantic Versioning (SemVer):
 
    ```bash
    git tag -a v<version-number> -m "Release version <version-number>"
@@ -47,9 +50,6 @@
    ```
 
    Tagging helps in keeping track of different versions of the project and makes it easier to roll back if needed.
-
-6. **Update Version in Package File**: Update the version number in the `package.json` or equivalent package file before
-   merging. This ensures consistency between the tagged version and the project metadata.
 
 ### Step 2: GitHub Release
 
