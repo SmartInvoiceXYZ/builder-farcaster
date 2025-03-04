@@ -15,7 +15,7 @@ interface Data {
 interface Result {
   propdates: Propdate[]
 }
-//0x9ee9a1bfbf4f8f9b977c6b30600d6131d2a56d0be8100e2238a057ea8b18be7e
+
 export const getAttestations = async (): Promise<Result> => {
   try {
     const propdatesPromises = attestationsChainsEndpoints.map(
@@ -26,6 +26,9 @@ export const getAttestations = async (): Promise<Result> => {
             where: {
               schemaId: {
                 equals: "${schemaId}"
+              }
+              isOffchain: {
+                equals: false
               }
             }
           ) {
@@ -38,17 +41,20 @@ export const getAttestations = async (): Promise<Result> => {
 
         const client = new GraphQLClient(endpoint)
         const response = await client.request<Data>(query)
-        const propdates = response.attestations.map((attestation) => {
-          const propdateObject = convertPropdateJsonToObject(
-            attestation.decodedDataJson,
-          )
-          return {
-            ...propdateObject,
-            recipient: attestation.recipient,
-            timeCreated: attestation.timeCreated,
-            chain,
-          }
-        })
+        const propdates = response.attestations
+          .map((attestation) => {
+            const propdateObject = convertPropdateJsonToObject(
+              attestation.decodedDataJson,
+            )
+            return {
+              ...propdateObject,
+              recipient: attestation.recipient,
+              timeCreated: attestation.timeCreated,
+              chain,
+            }
+          })
+          .filter((propdate) => !propdate.replyTo) // Filter out propdates with non-empty replyTo
+
         return propdates
       },
     )
