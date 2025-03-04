@@ -1,7 +1,9 @@
 import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { logger } from '@/logger'
+import { getDAOForTreasuryAddress } from '@/services/builder/get-dao-for-treasury'
 import { getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
+import { Chain, UpdateDao } from '@/services/builder/types'
 import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
@@ -109,4 +111,53 @@ export async function getUserFid() {
     logger.info({ fid }, 'User FID fetched and cached successfully')
   }
   return fid
+}
+
+/**
+ * Retrieves the DAO associated with a treasury address
+ * @param chain - The blockchain network to query
+ * @param treasuryAddress - The address of the treasury to look up
+ * @param propNumber - proposal number
+ * @returns A promise that resolves to the DAO object
+ */
+export async function getTreasuryDao(
+  chain: Chain,
+  treasuryAddress: string,
+  propNumber: number,
+) {
+  const cacheKey = `treasury_address_${treasuryAddress}_${propNumber.toString()}`
+  let dao = await getCache<UpdateDao | null>(cacheKey, CACHE_MAX_AGE_MS)
+
+  if (dao) {
+    logger.debug({ dao }, 'Dao fetched from cache')
+  } else {
+    try {
+      const response = await getDAOForTreasuryAddress(
+        chain,
+        treasuryAddress,
+        propNumber,
+      )
+      dao = response.dao
+      await setCache(cacheKey, dao)
+      logger.info({ dao }, 'Dao cached successfully')
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('No DAO found')) {
+          logger.error(
+            { message: error.message, stack: error.stack },
+            'Invalid treasury address or DAO not found',
+          )
+        } else if (error.message.includes('Proposal does not exist')) {
+          logger.error(
+            { message: error.message, stack: error.stack },
+            'Invalid Proposal number',
+          )
+        }
+      } else {
+        // handle other errors
+        throw error
+      }
+    }
+  }
+  return dao
 }

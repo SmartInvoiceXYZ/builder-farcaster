@@ -21,6 +21,16 @@ const envSchema = z.object({
   BUILDER_SUBGRAPH_ZORA_URL: z
     .string()
     .url('BUILDER_SUBGRAPH_ZORA_URL must be a valid URL'),
+  EASSCAN_GRAPHQL_ETHEREUM_ENDPOINT: z
+    .string()
+    .url('EASSCAN_GRAPHQL_ETHEREUM_ENDPOINT must be a valid URL'),
+  EASSCAN_GRAPHQL_OPTIMISM_ENDPOINT: z
+    .string()
+    .url('EASSCAN_GRAPHQL_OPTIMISM_ENDPOINT must be a valid URL'),
+  EASSCAN_GRAPHQL_BASE_ENDPOINT: z
+    .string()
+    .url('EASSCAN_GRAPHQL_BASE_ENDPOINT must be a valid URL'),
+  PROPDATE_SCHEMA_ID: z.string().min(1, 'PROPDATE_SCHEMA_ID is required'),
   NODE_ENV: z.enum(['development', 'production', 'test']),
 })
 
