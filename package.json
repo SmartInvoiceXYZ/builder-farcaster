@@ -11,6 +11,7 @@
     "dev:consume": "node dist/index.js queues consume -l 10",
     "dev:invites": "node dist/index.js process invites",
     "dev:process": "node dist/index.js process proposals",
+    "dev:propdates": "node dist/index.js process propdates",
     "dev:tokengen": "node dist/index.js warpcast token",
     "lint": "eslint",
     "prepare": "husky || :",
