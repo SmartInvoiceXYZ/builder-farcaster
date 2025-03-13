@@ -1,14 +1,14 @@
 import { chainEndpoints } from '@/services/builder/index'
-import { Chain, UpdateDao } from '@/services/builder/types'
+import { Chain, DaoMetadata } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { JsonObject } from 'type-fest'
 
 type Data = {
-  daos: UpdateDao[]
+  daos: DaoMetadata[]
 } & JsonObject
 
 interface Result {
-  dao: UpdateDao
+  dao: DaoMetadata
 }
 
 export const getDAOForTreasuryAddress = async (
@@ -38,7 +38,6 @@ export const getDAOForTreasuryAddress = async (
     const endpoint = chainEndpoints.find(
       (endPoint) => endPoint.chain.id === chain.id,
     )
-    console.log(endpoint)
     if (!endpoint) {
       throw new Error(`Endpoint not found for chain ID: ${chain.id.toString()}`)
     }

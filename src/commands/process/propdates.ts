@@ -1,9 +1,9 @@
 import { getCache, setCache } from '@/cache'
 import {
+  getDaoFromTreasury,
   getFollowerAddresses,
   getFollowerDAOs,
   getFollowerFids,
-  getTreasuryDao,
   getUserFid,
 } from '@/commands'
 import { logger } from '@/logger'
@@ -17,7 +17,7 @@ import { JsonValue } from 'type-fest'
  * @returns A promise that resolves when all updates have been processed
  * @throws Error if there's an issue fetching or processing updates
  */
-async function handleProposalsUpdates() {
+async function handleProposalUpdates() {
   try {
     logger.info('Fetching new updates...')
     const { propdates } = await getAttestations()
@@ -92,7 +92,7 @@ async function handleProposalsUpdates() {
         )
 
         // get dao and proposal data from dao treasury address
-        const dao = await getTreasuryDao(
+        const dao = await getDaoFromTreasury(
           propdate.chain,
           propdate.recipient,
           propdate.propId,
@@ -187,5 +187,5 @@ async function handleProposalsUpdates() {
  * This function triggers notifications for proposal updates that are currently active.
  */
 export async function processUpdates() {
-  await handleProposalsUpdates()
+  await handleProposalUpdates()
 }

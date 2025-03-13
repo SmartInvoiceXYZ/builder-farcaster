@@ -3,10 +3,6 @@ export interface Env {
   BUILDER_SUBGRAPH_BASE_URL: string
   BUILDER_SUBGRAPH_OPTIMISM_URL: string
   BUILDER_SUBGRAPH_ZORA_URL: string
-  EASSCAN_GRAPHQL_ETHEREUM_ENDPOINT: string
-  EASSCAN_GRAPHQL_OPTIMISM_ENDPOINT: string
-  EASSCAN_GRAPHQL_BASE_ENDPOINT: string
-  PROPDATE_SCHEMA_ID: string
 }
 
 export interface Chain {
@@ -69,7 +65,7 @@ export interface Propdate extends PropdateObject {
   timeCreated: number
 }
 
-export interface UpdateDao {
+export interface DaoMetadata {
   id: string
   name: string
   proposals: {
