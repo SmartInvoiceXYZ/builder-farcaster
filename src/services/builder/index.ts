@@ -33,7 +33,7 @@ const attestationEndpoints: Record<number, string> = {
   8453: 'https://base.easscan.org/graphql',
 }
 
-const PROPDATE_SCHEMA_ID =
+const PROPDATES_SCHEMA_ID =
   '0x9ee9a1bfbf4f8f9b977c6b30600d6131d2a56d0be8100e2238a057ea8b18be7e'
 
 export const chainEndpoints = chains.map((chain) => {
@@ -50,8 +50,8 @@ export const chainEndpoints = chains.map((chain) => {
 export const attestationChainEndpoints = chains
   .filter((chain) => chain.id != 7777777)
   .map((chain) => {
-    const endpoint: string | undefined = attestationEndpoints[chain.id]
-    const schemaId: string | undefined = PROPDATE_SCHEMA_ID
+    const endpoint = attestationEndpoints[chain.id]
+    const schemaId = PROPDATES_SCHEMA_ID
     if (!endpoint) {
       throw new Error(`Endpoint not found for chain ID: ${chain.id.toString()}`)
     }
