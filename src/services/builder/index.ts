@@ -28,7 +28,7 @@ export const endpoints: Record<number, string> = {
 }
 
 const attestationEndpoints: Record<number, string> = {
-  1: 'https://easscan.org/graphq',
+  1: 'https://easscan.org/graphql',
   10: 'https://optimism.easscan.org/graphql',
   8453: 'https://base.easscan.org/graphql',
 }
