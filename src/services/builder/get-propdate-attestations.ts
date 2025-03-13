@@ -5,6 +5,7 @@ import {
   PropdateObject,
 } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
+import { DateTime } from 'luxon'
 import { flatMap, pipe } from 'remeda'
 import { attestationChainEndpoints } from '.'
 
@@ -18,6 +19,10 @@ interface Result {
 
 export const getAttestations = async (): Promise<Result> => {
   try {
+    const oneDayAgoInSeconds = Math.floor(
+      DateTime.now().minus({ hours: 24 }).toSeconds(),
+    )
+
     const propdatesPromises = attestationChainEndpoints.map(
       async ({ chain, endpoint, schemaId }) => {
         const query = gql`
@@ -26,6 +31,9 @@ export const getAttestations = async (): Promise<Result> => {
             where: {
               schemaId: {
                 equals: "${schemaId}"
+              }
+              timeCreated:{
+                gte:${oneDayAgoInSeconds}
               }
               isOffchain: {
                 equals: false
