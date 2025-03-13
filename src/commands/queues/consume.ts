@@ -1,7 +1,7 @@
 import { env } from '@/config'
 import { logger } from '@/logger'
 import { completeTask, retryTask } from '@/queue'
-import { Dao, Propdate, Proposal, UpdateDao } from '@/services/builder/types'
+import { Dao, DaoMetadata, Propdate, Proposal } from '@/services/builder/types'
 import { sendDirectCast } from '@/services/warpcast/send-direct-cast'
 import { isPast, toRelativeTime } from '@/utils'
 import { PrismaClient } from '@prisma/client'
@@ -16,7 +16,7 @@ interface NotificationData {
   recipient: number
   proposal?: Proposal
   propdate?: Propdate
-  dao?: UpdateDao
+  dao?: DaoMetadata
 }
 
 interface InvitationData {
@@ -59,7 +59,7 @@ function formatProposalMessage(proposal: Proposal): string {
  * @param dao - The DAO information associated with the update
  * @returns A formatted string containing the proposal update notification message
  */
-function formatPropdateMessage(propdate: Propdate, dao: UpdateDao): string {
+function formatPropdateMessage(propdate: Propdate, dao: DaoMetadata): string {
   const {
     propId: proposalNumber,
     chain: { name: chainName },

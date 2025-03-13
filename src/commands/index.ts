@@ -3,7 +3,7 @@ import { env } from '@/config'
 import { logger } from '@/logger'
 import { getDAOForTreasuryAddress } from '@/services/builder/get-dao-for-treasury'
 import { getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
-import { Chain, UpdateDao } from '@/services/builder/types'
+import { Chain, DaoMetadata } from '@/services/builder/types'
 import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
@@ -120,13 +120,13 @@ export async function getUserFid() {
  * @param propNumber - proposal number
  * @returns A promise that resolves to the DAO object
  */
-export async function getTreasuryDao(
+export async function getDaoFromTreasury(
   chain: Chain,
   treasuryAddress: string,
   propNumber: number,
 ) {
   const cacheKey = `treasury_address_${treasuryAddress}_${propNumber.toString()}`
-  let dao = await getCache<UpdateDao | null>(cacheKey, CACHE_MAX_AGE_MS)
+  let dao = await getCache<DaoMetadata | null>(cacheKey, CACHE_MAX_AGE_MS)
 
   if (dao) {
     logger.debug({ dao }, 'Dao fetched from cache')

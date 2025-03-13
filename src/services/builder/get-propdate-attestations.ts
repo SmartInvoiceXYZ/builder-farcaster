@@ -6,7 +6,7 @@ import {
 } from '@/services/builder/types'
 import { gql, GraphQLClient } from 'graphql-request'
 import { flatMap, pipe } from 'remeda'
-import { attestationsChainsEndpoints } from '.'
+import { attestationChainEndpoints } from '.'
 
 interface Data {
   attestations: Attestation[]
@@ -18,7 +18,7 @@ interface Result {
 
 export const getAttestations = async (): Promise<Result> => {
   try {
-    const propdatesPromises = attestationsChainsEndpoints.map(
+    const propdatesPromises = attestationChainEndpoints.map(
       async ({ chain, endpoint, schemaId }) => {
         const query = gql`
         {
@@ -65,7 +65,6 @@ export const getAttestations = async (): Promise<Result> => {
       flatMap((propdates) => propdates),
     )
 
-    console.log(propdates)
     return { propdates }
   } catch (error) {
     console.error('Error fetching active proposals:', error)

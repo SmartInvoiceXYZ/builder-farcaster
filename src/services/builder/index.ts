@@ -27,11 +27,14 @@ export const endpoints: Record<number, string> = {
   7777777: env.BUILDER_SUBGRAPH_ZORA_URL,
 }
 
-export const attestationsEndpoints: Record<number, string> = {
-  1: env.EASSCAN_GRAPHQL_ETHEREUM_ENDPOINT,
-  10: env.EASSCAN_GRAPHQL_OPTIMISM_ENDPOINT,
-  8453: env.EASSCAN_GRAPHQL_BASE_ENDPOINT,
+const attestationEndpoints: Record<number, string> = {
+  1: 'https://easscan.org/graphq',
+  10: 'https://optimism.easscan.org/graphql',
+  8453: 'https://base.easscan.org/graphql',
 }
+
+const PROPDATE_SCHEMA_ID =
+  '0x9ee9a1bfbf4f8f9b977c6b30600d6131d2a56d0be8100e2238a057ea8b18be7e'
 
 export const chainEndpoints = chains.map((chain) => {
   const endpoint: string | undefined = endpoints[chain.id]
@@ -44,11 +47,11 @@ export const chainEndpoints = chains.map((chain) => {
   }
 })
 
-export const attestationsChainsEndpoints = chains
+export const attestationChainEndpoints = chains
   .filter((chain) => chain.id != 7777777)
   .map((chain) => {
-    const endpoint: string | undefined = attestationsEndpoints[chain.id]
-    const schemaId: string | undefined = env.PROPDATE_SCHEMA_ID
+    const endpoint: string | undefined = attestationEndpoints[chain.id]
+    const schemaId: string | undefined = PROPDATE_SCHEMA_ID
     if (!endpoint) {
       throw new Error(`Endpoint not found for chain ID: ${chain.id.toString()}`)
     }
