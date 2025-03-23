@@ -36,6 +36,7 @@ export interface Proposal {
 }
 
 export interface Attestation {
+  id: string
   recipient: string
   decodedDataJson: string
   timeCreated: number
@@ -60,6 +61,7 @@ export interface PropdateObject {
 }
 
 export interface Propdate extends PropdateObject {
+  id: string
   chain: Chain
   recipient: string
   timeCreated: number

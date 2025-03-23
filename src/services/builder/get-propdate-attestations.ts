@@ -33,13 +33,14 @@ export const getAttestations = async (): Promise<Result> => {
                 equals: "${schemaId}"
               }
               timeCreated:{
-                gte:${oneDayAgoInSeconds}
+                gte: ${oneDayAgoInSeconds}
               }
               isOffchain: {
                 equals: false
               }
             }
           ) {
+            id
             recipient
             timeCreated
             decodedDataJson
@@ -56,6 +57,7 @@ export const getAttestations = async (): Promise<Result> => {
             )
             return {
               ...propdateObject,
+              id: attestation.id,
               recipient: attestation.recipient,
               timeCreated: attestation.timeCreated,
               chain,

@@ -114,16 +114,13 @@ async function handleProposalUpdates() {
           continue
         }
 
-        // Check if this proposal has already been notified
-        if (
-          notifiedUpdatesSet.has(
-            `${propdate.propId.toString()}-${propdate.milestoneId.toString()}`,
-          )
-        ) {
+        // Check if this propdate has already been notified
+        if (notifiedUpdatesSet.has(propdate.id)) {
           logger.debug(
             {
               proposalId: propdate.propId,
               milestone: propdate.milestoneId,
+              propdateId: propdate.id,
               follower,
             },
             'Proposal update already notified, skipping.',
@@ -136,6 +133,7 @@ async function handleProposalUpdates() {
           {
             proposalId: propdate.propId,
             milestone: propdate.milestoneId,
+            propdateId: propdate.id,
             follower,
           },
           'Adding proposal update to notification queue.',
@@ -148,13 +146,12 @@ async function handleProposalUpdates() {
         })
 
         // Mark this update as notified
-        notifiedUpdatesSet.add(
-          `${propdate.propId.toString()}-${propdate.milestoneId.toString()}`,
-        )
+        notifiedUpdatesSet.add(propdate.id)
         logger.debug(
           {
             proposalId: propdate.propId,
             milestone: propdate.milestoneId,
+            propdateId: propdate.id,
             follower,
           },
           'Proposal Update marked as notified.',
