@@ -34,3 +34,43 @@ export interface Proposal {
   voteStart: string
   voteEnd: string
 }
+
+export interface Attestation {
+  id: string
+  recipient: string
+  decodedDataJson: string
+  timeCreated: number
+}
+
+export interface AttestationJsonData {
+  name: string
+  type: string
+  signature: string
+  value: {
+    name: string
+    type: string
+    value: string | number
+  }
+}
+
+export interface PropdateObject {
+  propId: number
+  replyTo: string
+  response: string
+  milestoneId: number
+}
+
+export interface Propdate extends PropdateObject {
+  id: string
+  chain: Chain
+  recipient: string
+  timeCreated: number
+}
+
+export interface DaoMetadata {
+  id: string
+  name: string
+  proposals: {
+    title: string
+  }[]
+}
