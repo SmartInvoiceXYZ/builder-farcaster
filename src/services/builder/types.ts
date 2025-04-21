@@ -1,3 +1,5 @@
+import { Hex } from 'viem'
+
 export interface Env {
   BUILDER_SUBGRAPH_ETHEREUM_URL: string
   BUILDER_SUBGRAPH_BASE_URL: string
@@ -36,7 +38,7 @@ export interface Proposal {
 }
 
 export interface Attestation {
-  id: string
+  id: Hex
   recipient: string
   decodedDataJson: string
   timeCreated: number
@@ -53,24 +55,31 @@ export interface AttestationJsonData {
   }
 }
 
+export interface PropdateMessage {
+  milestoneId?: number
+  content: string
+  labels?: string[]
+  attachments?: string[]
+}
+
+export enum MessageType {
+  INLINE_TEXT = 0,
+  INLINE_JSON,
+  URL_TEXT,
+  URL_JSON,
+}
+
 export interface PropdateObject {
-  propId: number
-  replyTo: string
-  response: string
-  milestoneId: number
+  proposalId: Hex
+  originalMessageId: Hex
+  messageType: MessageType
+  message: string
+  parsedMessage: PropdateMessage
 }
 
 export interface Propdate extends PropdateObject {
-  id: string
+  id: Hex
   chain: Chain
   recipient: string
   timeCreated: number
-}
-
-export interface DaoMetadata {
-  id: string
-  name: string
-  proposals: {
-    title: string
-  }[]
 }
