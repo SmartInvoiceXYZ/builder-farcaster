@@ -1,12 +1,13 @@
 import { env } from '@/config'
 import { logger } from '@/logger'
 import { completeTask, retryTask } from '@/queue'
-import { Dao, DaoMetadata, Propdate, Proposal } from '@/services/builder/types'
+import { Dao, Propdate, Proposal } from '@/services/builder/types'
 import { sendDirectCast } from '@/services/warpcast/send-direct-cast'
 import { isPast, toRelativeTime } from '@/utils'
 import { PrismaClient } from '@prisma/client'
 import sha256 from 'crypto-js/sha256'
 import { uniqueBy } from 'remeda'
+import removeMd from 'remove-markdown'
 
 type TaskData = {
   type: 'notification' | 'test' | 'invitation'
@@ -16,7 +17,6 @@ interface NotificationData {
   recipient: number
   proposal?: Proposal
   propdate?: Propdate
-  dao?: DaoMetadata
 }
 
 interface InvitationData {
@@ -56,29 +56,34 @@ function formatProposalMessage(proposal: Proposal): string {
 /**
  * Formats a proposal update (propdate) notification message
  * @param propdate - The proposal update data to format
- * @param dao - The DAO information associated with the update
+ * @param proposal - The proposal information associated with the update
  * @returns A formatted string containing the proposal update notification message
  */
-function formatPropdateMessage(propdate: Propdate, dao: DaoMetadata): string {
+function formatPropdateMessage(propdate: Propdate, proposal: Proposal): string {
   const {
-    propId: proposalNumber,
     chain: { name: chainName },
-    milestoneId: milestone,
+    parsedMessage,
     timeCreated: createdAt,
-    response,
   } = propdate
-  const {
-    id: daoId,
-    name: daoName,
-    proposals: [{ title: proposalTitle }],
-  } = dao
 
+  const {
+    proposalNumber,
+    title: proposalTitle,
+    dao: { id: daoId, name: daoName },
+  } = proposal
+
+  const update = removeMd(parsedMessage.content)
   const truncatedUpdate =
-    response.split('\n').slice(0, 2).join('\n') +
-    (response.split('\n').length > 2 ? '...' : '')
+    update.split('\n').slice(0, 2).join('\n') +
+    (update.split('\n').length > 2 ? '...' : '')
+
+  const milestoneText =
+    parsedMessage.milestoneId !== undefined
+      ? ` for milestone ${parsedMessage.milestoneId.toString()}`
+      : ''
 
   return (
-    `📢 A new update to proposal (#${proposalNumber.toString()}: "${proposalTitle}") for milestone ${milestone.toString()} has been created on ${daoName} ` +
+    `📢 A new update to proposal (#${proposalNumber.toString()}: "${proposalTitle}")${milestoneText} has been created on ${daoName} ` +
     `around ${toRelativeTime(Number(createdAt))}. ` +
     `\n\n${truncatedUpdate} ` +
     `\n\n🚀 Check it out for more details and participate in the voting process!` +
@@ -94,12 +99,12 @@ function formatPropdateMessage(propdate: Propdate, dao: DaoMetadata): string {
  */
 async function handleNotification(taskId: string, data: NotificationData) {
   try {
-    const { recipient, proposal, propdate, dao } = data
+    const { recipient, proposal, propdate } = data
     let message: string | undefined
-    if (proposal) {
+    if (proposal && !propdate) {
       message = formatProposalMessage(proposal)
-    } else if (propdate && dao) {
-      message = formatPropdateMessage(propdate, dao)
+    } else if (proposal && propdate) {
+      message = formatPropdateMessage(propdate, proposal)
     }
     if (!message) {
       throw new Error('No valid message format found')
