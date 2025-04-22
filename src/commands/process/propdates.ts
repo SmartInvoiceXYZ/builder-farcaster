@@ -1,14 +1,14 @@
 import { getCache, setCache } from '@/cache'
 import {
-  getDaoFromTreasury,
   getFollowerAddresses,
   getFollowerDAOs,
   getFollowerFids,
+  getProposalFromId,
   getUserFid,
 } from '@/commands'
 import { logger } from '@/logger'
 import { addToQueue } from '@/queue'
-import { getAttestations } from '@/services/builder/get-propdate-attestations'
+import { getPropdateAttestations } from '@/services/eas/get-propdate-attestations'
 import { filter, pipe } from 'remeda'
 import { JsonValue } from 'type-fest'
 
@@ -19,9 +19,9 @@ import { JsonValue } from 'type-fest'
  */
 async function handleProposalUpdates() {
   try {
-    logger.info('Fetching new updates...')
-    const { propdates } = await getAttestations()
-    logger.info({ propdates }, 'New updates retrieved.')
+    logger.info('Fetching new propdates...')
+    const { propdates } = await getPropdateAttestations()
+    logger.info({ propdates }, 'New propdates retrieved.')
 
     const userFid = await getUserFid()
     logger.debug({ userFid }, 'User FID retrieved.')
@@ -87,26 +87,37 @@ async function handleProposalUpdates() {
       // Loop through each proposal in the filtered propdates array
       for (const propdate of propdates) {
         logger.debug(
-          { proposalId: propdate.propId, milestone: propdate.milestoneId },
+          {
+            propdateId: propdate.id,
+            proposalId: propdate.proposalId,
+          },
           'Processing proposal update for follower.',
         )
 
-        // get dao and proposal data from dao treasury address
-        const dao = await getDaoFromTreasury(
+        // get proposal data from proposal id
+        const proposal = await getProposalFromId(
           propdate.chain,
-          propdate.recipient,
-          propdate.propId,
+          propdate.proposalId,
         )
-        if (dao === null) {
-          // skip if dao or proposal number doesn't exist
-          continue
-        }
-        // If the proposal's DAO ID is not in the list of DAOs for the current follower, skip to the next update
-        if (!daos.includes(dao.id)) {
+
+        if (!proposal) {
+          // skip if proposal doesn't exist or Json parsing error
           logger.debug(
             {
-              proposalId: propdate.propId,
-              milestone: propdate.milestoneId,
+              propdateId: propdate.id,
+              proposalId: propdate.proposalId,
+            },
+            'Proposal not found, skipping.',
+          )
+          continue
+        }
+
+        // If the proposal's DAO ID is not in the list of DAOs for the current follower, skip to the next update
+        if (!daos.includes(proposal.dao.id)) {
+          logger.debug(
+            {
+              propdateId: propdate.id,
+              proposalId: propdate.proposalId,
               follower,
             },
             'Proposal DAO ID not associated with follower, skipping.',
@@ -118,9 +129,8 @@ async function handleProposalUpdates() {
         if (notifiedUpdatesSet.has(propdate.id)) {
           logger.debug(
             {
-              proposalId: propdate.propId,
-              milestone: propdate.milestoneId,
               propdateId: propdate.id,
+              proposalId: propdate.proposalId,
               follower,
             },
             'Proposal update already notified, skipping.',
@@ -131,9 +141,8 @@ async function handleProposalUpdates() {
         // Add the proposal to the queue for notifications
         logger.info(
           {
-            proposalId: propdate.propId,
-            milestone: propdate.milestoneId,
             propdateId: propdate.id,
+            proposalId: propdate.proposalId,
             follower,
           },
           'Adding proposal update to notification queue.',
@@ -142,16 +151,15 @@ async function handleProposalUpdates() {
           type: 'notification',
           recipient: follower,
           propdate: propdate as unknown as JsonValue,
-          dao: dao as unknown as JsonValue,
+          proposal: proposal as unknown as JsonValue,
         })
 
         // Mark this update as notified
         notifiedUpdatesSet.add(propdate.id)
         logger.debug(
           {
-            proposalId: propdate.propId,
-            milestone: propdate.milestoneId,
             propdateId: propdate.id,
+            proposalId: propdate.proposalId,
             follower,
           },
           'Proposal Update marked as notified.',

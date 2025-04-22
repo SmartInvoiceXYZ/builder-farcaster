@@ -1,12 +1,13 @@
 import { getCache, setCache } from '@/cache'
 import { env } from '@/config'
 import { logger } from '@/logger'
-import { getDAOForTreasuryAddress } from '@/services/builder/get-dao-for-treasury'
 import { getDAOsForOwners } from '@/services/builder/get-daos-for-owners'
-import { Chain, DaoMetadata } from '@/services/builder/types'
+import { getProposalData } from '@/services/builder/get-proposal-from-id'
+import { Chain, Proposal } from '@/services/builder/types'
 import { getFollowers } from '@/services/warpcast/get-followers'
 import { getMe } from '@/services/warpcast/get-me'
 import { getVerifications } from '@/services/warpcast/get-verifications'
+import { Hex } from 'viem'
 
 export const CACHE_MAX_AGE_MS = 86400 * 1000 // 1 day in milliseconds
 
@@ -114,43 +115,29 @@ export async function getUserFid() {
 }
 
 /**
- * Retrieves the DAO associated with a treasury address
+ * Retrieves proposal data for a given proposal ID
  * @param chain - The blockchain network to query
- * @param treasuryAddress - The address of the treasury to look up
- * @param propNumber - proposal number
+ * @param proposalId - proposal Id
  * @returns A promise that resolves to the DAO object
  */
-export async function getDaoFromTreasury(
-  chain: Chain,
-  treasuryAddress: string,
-  propNumber: number,
-) {
-  const cacheKey = `treasury_address_${treasuryAddress}_${propNumber.toString()}`
-  let dao = await getCache<DaoMetadata | null>(cacheKey, CACHE_MAX_AGE_MS)
+export async function getProposalFromId(chain: Chain, proposalId: Hex) {
+  const cacheKey = `propdate_${proposalId.toLowerCase()}`
+  let proposal = await getCache<Proposal | null>(cacheKey, CACHE_MAX_AGE_MS)
 
-  if (dao) {
-    logger.debug({ dao }, 'Dao fetched from cache')
+  if (proposal) {
+    logger.debug({ proposal }, 'Proposal fetched from cache')
   } else {
     try {
-      const response = await getDAOForTreasuryAddress(
-        chain,
-        treasuryAddress,
-        propNumber,
-      )
-      dao = response.dao
-      await setCache(cacheKey, dao)
-      logger.info({ dao }, 'Dao cached successfully')
+      const response = await getProposalData(chain, proposalId)
+      proposal = response.proposal
+      await setCache(cacheKey, proposal)
+      logger.info({ proposal }, 'Proposal cached successfully')
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes('No DAO found')) {
+        if (error.message.includes('Proposal does not exist')) {
           logger.error(
             { message: error.message, stack: error.stack },
-            'Invalid treasury address or DAO not found',
-          )
-        } else if (error.message.includes('Proposal does not exist')) {
-          logger.error(
-            { message: error.message, stack: error.stack },
-            'Invalid Proposal number',
+            'Invalid Proposal Id',
           )
         }
       } else {
@@ -159,5 +146,5 @@ export async function getDaoFromTreasury(
       }
     }
   }
-  return dao
+  return proposal
 }
